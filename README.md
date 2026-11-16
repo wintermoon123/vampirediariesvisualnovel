@@ -1,2 +1,2 @@
 # vampirediariesvisualnovel
-《那天晚上，你没有回头》— 吸血鬼日记同人视觉小说 (TVD fan-made visual novel)
+基于美剧《吸血鬼日记》的视觉小说
