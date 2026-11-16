@@ -1,0 +1,2186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>那天晚上，你没有回头 · 完整版</title>
+<style>
+:root{
+  --bg:#07060b;--panel:rgba(16,12,20,.94);--panel2:rgba(24,18,28,.96);
+  --line:#6d5a3f;--wine:#8f2233;--winesoft:#c45a68;--gold:#c9a227;--goldsoft:#e0c675;
+  --text:#ece4d8;--muted:#9d9189;
+  --stefan:#5fa89a;--damon:#c25463;--self:#c9a227;--moon:#a9bcd4;
+  --accent:var(--goldsoft);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:"Noto Serif SC","Songti SC","STSong",Georgia,serif}
+button{font-family:inherit;cursor:pointer}
+#app{position:relative;width:100%;height:100%;overflow:hidden;background:#07060b}
+
+/* ---------- 场景与氛围 ---------- */
+.scene{position:absolute;inset:0;opacity:0;transition:opacity 1.1s ease;pointer-events:none;transform:scale(1.02)}
+.scene.active{opacity:1;transform:scale(1)}
+.scene svg{width:100%;height:100%;display:block}
+.vignette{position:absolute;inset:0;pointer-events:none;z-index:2;background:radial-gradient(ellipse at 50% 42%,transparent 20%,rgba(3,2,6,.82) 100%)}
+.grain{position:absolute;inset:0;pointer-events:none;z-index:3;opacity:.05;background-image:repeating-linear-gradient(0deg,transparent 0 3px,#fff 3px 4px)}
+.letterbox::before,.letterbox::after{content:"";position:absolute;left:0;right:0;height:2.5vh;background:#000;z-index:4;pointer-events:none}
+.letterbox::before{top:0}.letterbox::after{bottom:0}
+.atmos{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.atmos i{position:absolute;display:block;border-radius:50%;background:#fff;opacity:.35;animation:drift linear infinite}
+@keyframes drift{0%{transform:translateY(-10vh) translateX(0);opacity:0}10%{opacity:.35}90%{opacity:.35}100%{transform:translateY(110vh) translateX(40px);opacity:0}}
+.flash{position:absolute;inset:0;z-index:18;background:#fff;opacity:0;pointer-events:none;transition:opacity .5s}
+.flash.on{opacity:.15;transition:opacity .05s}
+
+/* ---------- HUD ---------- */
+.hud{position:absolute;top:22px;left:26px;width:238px;z-index:6;text-shadow:0 1px 6px #000}
+.chapter{font-size:12px;letter-spacing:.24em;color:var(--goldsoft);margin-bottom:4px}
+.chapter span{color:var(--muted);letter-spacing:.08em}
+.chapter-progress{margin-top:6px;height:1px;background:rgba(201,162,39,.18);position:relative}
+.chapter-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--wine),var(--goldsoft));width:0;transition:width .8s ease}
+.clock{display:flex;align-items:center;gap:10px;border-top:1px solid rgba(201,162,39,.25);border-bottom:1px solid rgba(201,162,39,.25);padding:9px 0;margin:10px 0 14px;font-size:11px;color:var(--muted)}
+.moonwheel{width:26px;height:26px;border-radius:50%;position:relative;flex:none;background:#dfe7ee;box-shadow:0 0 16px rgba(169,188,212,.4);overflow:hidden}
+.moonwheel::after{content:"";position:absolute;inset:0;border-radius:50%;background:#07060b;transform:translateX(var(--shadow,9px));transition:transform .6s}
+.clock b{color:#cdd9e6;font-weight:400;font-size:12px;display:block;letter-spacing:.12em}
+.clock small{font-size:10px;color:#6f6660;display:block;margin-top:2px}
+.stat{margin-bottom:11px}
+.stat-head{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:5px;letter-spacing:.06em}
+.stat-head b{font-weight:400;color:var(--text)}
+.stat-head .emo{font-size:12px;margin-right:5px}
+.bar{height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;width:0;transition:width .6s ease;border-radius:3px}
+#barStefan{background:linear-gradient(90deg,#2d6b61,var(--stefan))}
+#barDamon{background:linear-gradient(90deg,#6b2531,var(--damon))}
+#barSelf{background:linear-gradient(90deg,#8a7228,var(--self))}
+.tools{position:absolute;top:18px;right:22px;z-index:7;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;max-width:60%}
+.tool{background:rgba(10,8,14,.65);border:1px solid rgba(201,162,39,.28);color:var(--muted);font-size:11px;letter-spacing:.08em;padding:7px 11px;border-radius:2px;transition:.2s;backdrop-filter:blur(3px)}
+.tool:hover{color:var(--goldsoft);border-color:var(--gold);background:rgba(143,34,51,.18)}
+
+/* ---------- 人物立绘 ---------- */
+.portrait{position:absolute;left:50%;bottom:182px;transform:translateX(-50%) translateY(14px);height:340px;width:258px;z-index:3;opacity:0;transition:opacity .6s ease,transform .6s ease;pointer-events:none;filter:drop-shadow(0 12px 30px rgba(0,0,0,.7))}
+.portrait.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.portrait svg{height:100%;width:100%}
+
+/* ---------- 对话框 ---------- */
+.dialogue-wrap{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:min(900px,calc(100% - 48px));z-index:5}
+.dialogue{min-height:184px;background:linear-gradient(180deg,rgba(20,15,24,.96),rgba(13,10,17,.97));border:1px solid rgba(201,162,39,.32);border-top:2px solid var(--wine);padding:22px 30px 18px;backdrop-filter:blur(4px);box-shadow:0 -8px 40px rgba(0,0,0,.5);position:relative}
+.dialogue::before{content:"";position:absolute;left:0;top:0;width:60px;height:2px;background:var(--goldsoft);box-shadow:0 0 12px var(--goldsoft)}
+.speaker{font-size:14px;letter-spacing:.22em;color:var(--goldsoft);margin-bottom:14px;min-height:20px}
+.speaker::before{content:"";display:inline-block;width:14px;height:1px;background:var(--winesoft);vertical-align:middle;margin-right:10px}
+.speaker:empty{display:none}
+.speaker.stefan{color:var(--stefan)}.speaker.stefan::before{background:var(--stefan)}
+.speaker.damon{color:var(--winesoft)}.speaker.damon::before{background:var(--damon)}
+.speaker.bonnie{color:#b79ad6}.speaker.bonnie::before{background:#9a7fc0}
+.speaker.caroline{color:#e6c98f}.speaker.caroline::before{background:#d9a441}
+.speaker.matt{color:#9fc3d6}.speaker.matt::before{background:#6f9fc0}
+.speaker.katherine{color:var(--winesoft)}.speaker.katherine::before{background:#8f2233}
+.text{font-size:16px;line-height:2.05;letter-spacing:.05em;min-height:68px;white-space:pre-wrap;text-shadow:0 1px 3px #000}
+.next{position:absolute;right:24px;bottom:12px;font-size:11px;color:var(--goldsoft);opacity:0;transition:opacity .3s;animation:pulse 1.6s infinite}
+.next.show{opacity:1}
+@keyframes pulse{50%{opacity:.32}}
+.caret{display:inline-block;width:7px;height:15px;background:var(--goldsoft);vertical-align:-2px;margin-left:2px;animation:blink .7s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ---------- 选项 ---------- */
+.choices{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:min(640px,calc(100% - 48px));z-index:9;display:none}
+.choices.show{display:block;animation:choiceIn .35s ease}
+@keyframes choiceIn{from{opacity:0;transform:translate(-50%,-46%)}to{opacity:1;transform:translate(-50%,-50%)}}
+.choices-title{text-align:center;font-size:12px;letter-spacing:.28em;color:var(--goldsoft);margin-bottom:16px;text-shadow:0 2px 10px #000}
+.choice{width:100%;text-align:left;background:linear-gradient(90deg,rgba(28,22,32,.97),rgba(20,16,26,.95));border:1px solid rgba(201,162,39,.3);color:var(--text);font-size:14px;line-height:1.65;padding:15px 46px 15px 18px;margin-bottom:9px;transition:.22s;position:relative;backdrop-filter:blur(4px)}
+.choice:hover:not(:disabled){background:linear-gradient(90deg,rgba(143,34,51,.38),rgba(28,20,32,.95));border-color:var(--winesoft);transform:translateX(6px);box-shadow:-4px 0 0 var(--winesoft)}
+.choice:disabled{opacity:.4;cursor:not-allowed;border-style:dashed}
+.choice .key{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:11px;color:var(--goldsoft);border:1px solid rgba(201,162,39,.35);width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.choice.locked{color:#8a8079}
+.choice.locked .lock{display:block;font-size:10px;color:var(--gold);letter-spacing:.1em;margin-top:4px}
+.choice .fx{display:block;font-size:10px;color:#7f746d;margin-top:5px;letter-spacing:.05em}
+
+/* ---------- 全屏面板 ---------- */
+.screen{position:absolute;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 40%,rgba(20,10,18,.7),rgba(6,4,9,.94));backdrop-filter:blur(6px)}
+.screen.show{display:flex;animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.card{width:min(780px,calc(100% - 36px));max-height:92vh;overflow:auto;border:1px solid rgba(201,162,39,.35);background:linear-gradient(180deg,#17121d 0%,#0d0a12 100%);padding:38px 46px;text-align:center;position:relative;box-shadow:0 20px 80px rgba(0,0,0,.7)}
+.card::before,.card::after{content:"";position:absolute;width:26px;height:26px;border:1px solid var(--gold);opacity:.6}
+.card::before{left:12px;top:12px;border-right:0;border-bottom:0}
+.card::after{right:12px;bottom:12px;border-left:0;border-top:0}
+.subtitle{font-size:11px;letter-spacing:.36em;color:var(--gold);margin-bottom:14px}
+h1{font-size:32px;font-weight:400;letter-spacing:.1em;margin:0 0 8px;text-shadow:0 2px 20px rgba(201,162,39,.25)}
+.tagline{font-size:13px;color:var(--muted);letter-spacing:.1em;margin-bottom:20px;line-height:1.8}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:20px 0}
+.setting{display:flex;justify-content:center;gap:22px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:18px}
+.setting b{display:block;color:var(--goldsoft);font-weight:400;margin-bottom:4px;letter-spacing:.1em}
+.howto{font-size:11px;line-height:1.95;color:#9a8f87;background:rgba(201,162,39,.05);border-left:2px solid var(--wine);padding:11px 15px;text-align:left;margin-bottom:16px}
+.gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:16px 0}
+.gitem{border:1px solid rgba(201,162,39,.16);padding:9px 5px;font-size:10px;color:var(--muted);text-align:center;min-height:48px}
+.gitem.on{color:var(--goldsoft);border-color:rgba(201,162,39,.5);background:rgba(201,162,39,.06)}
+.gitem small{display:block;color:#6f6660;font-size:9px;margin-top:3px}
+.btn{background:transparent;border:1px solid var(--gold);color:var(--goldsoft);font-size:13px;letter-spacing:.18em;padding:11px 30px;margin:5px 3px;transition:.2s}
+.btn:hover{background:var(--gold);color:#120d18;box-shadow:0 0 22px rgba(201,162,39,.3)}
+.btn.ghost{border-color:rgba(201,162,39,.35);color:var(--muted)}
+.btn.ghost:hover{background:rgba(201,162,39,.12);color:var(--text)}
+.notice{font-size:11px;color:#736a66;line-height:1.8;margin-top:16px}
+.end-title{font-size:26px;color:var(--goldsoft);letter-spacing:.12em;margin:6px 0}
+.end-tag{font-size:11px;letter-spacing:.2em;color:var(--muted);margin-bottom:16px}
+.end-text{font-size:14px;line-height:2.1;text-align:left;white-space:pre-wrap;color:#ddd3c7}
+.end-stamp{display:inline-block;border:1px solid var(--gold);color:var(--goldsoft);font-size:11px;letter-spacing:.2em;padding:5px 14px;margin:0 0 14px;transform:rotate(-3deg);opacity:.8}
+.setrow{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:8px 2px;border-bottom:1px solid rgba(201,162,39,.12)}
+.setrow button{background:transparent;border:1px solid rgba(201,162,39,.35);color:var(--goldsoft);font-size:11px;padding:4px 12px;min-width:64px}
+#logPanel{position:absolute;inset:0;z-index:15;background:rgba(8,6,12,.97);display:none;padding:40px max(40px,10%);overflow:auto}
+#logPanel.show{display:block;animation:fadeIn .3s}
+#logPanel h2{font-size:16px;font-weight:400;letter-spacing:.24em;color:var(--goldsoft);margin:0 0 24px}
+.logline{font-size:13px;line-height:1.9;color:var(--muted);border-left:1px solid var(--line);padding-left:16px;margin-bottom:13px}
+.logline b{color:var(--goldsoft);font-weight:400;margin-right:10px}
+.logline.choice-log{color:#c9b9a6;border-color:var(--wine)}
+.logline.chapter-log{color:var(--goldsoft);font-size:12px;letter-spacing:.2em;margin-top:22px;border:0;padding:0}
+.closehint{position:fixed;bottom:18px;right:24px;font-size:11px;color:#6f6660;z-index:16}
+@media(max-width:640px){
+ .hud{width:172px;top:12px;left:12px}.chapter{font-size:10px}.clock{font-size:10px;padding:6px 0}
+ .tools{right:8px;top:10px;gap:3px}.tool{font-size:10px;padding:5px 6px}
+ .portrait{height:240px;width:180px;bottom:170px}
+ .dialogue{padding:16px 16px 14px;min-height:170px}.text{font-size:14px;line-height:1.85}
+ .choices{top:43%}.choice{font-size:13px;padding:11px 40px 11px 14px}
+ .card{padding:28px 18px}h1{font-size:23px}.gallery{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="app" class="letterbox">
+  <div class="scene active" id="scene0"></div><div class="scene" id="scene1"></div>
+  <div class="scene" id="scene2"></div><div class="scene" id="scene3"></div>
+  <div class="scene" id="scene4"></div><div class="scene" id="scene5"></div>
+  <div class="scene" id="scene6"></div><div class="scene" id="scene7"></div>
+  <div class="atmos" id="atmos"></div>
+  <div class="vignette"></div><div class="grain"></div><div class="flash" id="flash"></div>
+
+  <div class="hud">
+    <div class="chapter" id="chapterLabel"></div>
+    <div class="chapter-progress"><i id="chapterBar"></i></div>
+    <div class="clock">
+      <div class="moonwheel" id="moonIcon"></div>
+      <div><b id="clockTime">夜晚</b><small id="clockMoon">上弦月</small></div>
+      <div style="margin-left:auto;text-align:right"><small>月相变化<br>解锁隐藏选项</small></div>
+    </div>
+    <div class="stat"><div class="stat-head"><b><span class="emo">≈</span>Stefan · 信任</b><span id="valStefan">2</span></div><div class="bar"><i id="barStefan"></i></div></div>
+    <div class="stat"><div class="stat-head"><b><span class="emo">✦</span>Damon · 好奇</b><span id="valDamon">1</span></div><div class="bar"><i id="barDamon"></i></div></div>
+    <div class="stat"><div class="stat-head"><b><span class="emo">◈</span>自我边界</b><span id="valSelf">3</span></div><div class="bar"><i id="barSelf"></i></div></div>
+  </div>
+  <div class="tools">
+    <button class="tool" id="btnSave">存档</button><button class="tool" id="btnLoad">读档</button>
+    <button class="tool" id="btnLog">记录</button><button class="tool" id="btnSet">设置</button><button class="tool" id="btnHome">标题</button>
+  </div>
+  <div class="portrait" id="portrait"></div>
+  <div class="dialogue-wrap"><div class="dialogue" id="dialogue">
+    <div class="speaker" id="speaker"></div><div class="text" id="text"></div><div class="next" id="next">点击继续 ▸</div>
+  </div></div>
+  <div class="choices" id="choices"><div class="choices-title" id="choicesTitle">你要怎么做？</div><div id="choiceList"></div></div>
+
+  <div class="screen show" id="titleScreen"><div class="card">
+    <div class="subtitle">TVD · IF STORY / 非商业粉丝二创</div>
+    <h1>那天晚上，你没有回头</h1>
+    <div class="tagline">原作里，你看见他之后转身跑了。这一次，你可以停下来。</div>
+    <div class="setting">
+      <div><b>视角</b>Elena · if 线</div><div><b>结构</b>七章 · 多线抉择</div><div><b>结局</b>九种 · 可收集</div>
+    </div>
+    <div class="howto">夜晚、满月与隐藏线索会改变同一段对话里你能说的话：<b>墓园</b>是夜晚，<b>走廊</b>是白天，你可以选择等到暮色；<b>满月</b>下会出现只属于月光的选项。<br>左上三条数值决定你最终站在谁那边，以及你还剩下多少自己。</div>
+    <div class="gallery" id="gallery"></div>
+    <button class="btn" id="btnStart">开始游戏</button><button class="btn ghost" id="btnContinue">继续存档</button>
+    <div class="notice">点击 / 空格推进 · 数字键 1-3 选择 · 存档会自动记录线索</div>
+  </div></div>
+
+  <div class="screen" id="endScreen"><div class="card">
+    <div class="subtitle">结局</div><div class="end-stamp" id="endStamp">结局已收录</div>
+    <div class="end-title" id="endTitle"></div><div class="end-tag" id="endTag"></div>
+    <div class="end-text" id="endText"></div><div class="rule"></div>
+    <div class="notice" id="endStats"></div>
+    <div style="margin-top:18px"><button class="btn" id="btnRestart">再来一次</button><button class="btn ghost" id="btnBackTitle">回到标题</button></div>
+  </div></div>
+
+  <div class="screen" id="setScreen"><div class="card" style="max-width:520px">
+    <div class="subtitle">设置</div><h1 style="font-size:22px">阅读偏好</h1>
+    <div class="setrow"><span>文字速度</span><button id="setSpeed">标准</button></div>
+    <div class="setrow"><span>自动播放</span><button id="setAuto">关闭</button></div>
+    <div class="setrow"><span>电影黑边</span><button id="setBar">开启</button></div>
+    <div class="setrow"><span>氛围粒子</span><button id="setAtmos">开启</button></div>
+    <div class="notice">设置会自动保存在本机浏览器。</div>
+    <div style="margin-top:16px"><button class="btn" id="setClose">返回</button></div>
+  </div></div>
+
+  <div id="logPanel"><h2>对话记录</h2><div id="logContent"></div><div class="closehint">点击任意处关闭</div></div>
+</div>
+<script>
+/* ==================== 场景 ==================== */
+const scenes={
+ grave:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="gsky" x2="0" y2="1"><stop stop-color="#0a1622"/><stop offset="1" stop-color="#13212a"/></linearGradient><radialGradient id="gmoon"><stop stop-color="#e6eef2"/><stop offset="1" stop-color="#9fb2bd" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="700" fill="url(#gsky)"/><circle cx="925" cy="128" r="110" fill="url(#gmoon)" opacity=".25"/><circle cx="925" cy="128" r="58" fill="#dfe8ec" opacity=".85"/><circle cx="906" cy="112" r="13" fill="#aebdc4" opacity=".35"/><path d="M0 300 Q160 250 320 292 T640 278 T980 300 T1200 280 L1200 0 L0 0Z" fill="#101d29" opacity=".8"/><path d="M0 500 Q290 452 590 505 T1200 486 L1200 700 L0 700Z" fill="#0d1c20"/><path d="M0 560 Q360 520 700 568 T1200 552 L1200 700 L0 700Z" fill="#071216"/><g fill="#1b2b2e" stroke="#2a3d3e" stroke-width="2"><path d="M120 520 Q120 452 158 452 Q196 452 196 520Z"/><rect x="116" y="516" width="84" height="60"/><path d="M320 534 Q320 468 360 468 Q400 468 400 534Z"/><rect x="316" y="530" width="88" height="58"/><path d="M660 516 Q660 454 698 454 Q736 454 736 516Z"/><rect x="656" y="512" width="84" height="62"/><path d="M1035 528 Q1035 464 1075 464 Q1115 464 1115 528Z"/><rect x="1031" y="524" width="88" height="60"/></g><g stroke="#050b0e" fill="none" stroke-linecap="round"><path d="M40 700 Q70 480 30 250" stroke-width="15"/><path d="M30 300 Q110 250 170 210" stroke-width="7"/><path d="M45 380 Q-10 330 -40 300" stroke-width="5"/><path d="M1180 700 Q1140 460 1190 210" stroke-width="12"/><path d="M1180 300 Q1090 245 1040 205" stroke-width="6"/></g><g stroke="#b8ccd6" stroke-width="1" opacity=".2"><path d="M80 0 L50 190"/><path d="M180 40 L150 230"/><path d="M280 0 L250 200"/><path d="M420 30 L390 220"/><path d="M540 0 L510 190"/><path d="M680 50 L650 240"/><path d="M800 0 L770 210"/><path d="M1010 30 L980 220"/><path d="M60 260 L35 420"/><path d="M330 280 L305 440"/><path d="M760 270 L735 430"/><path d="M980 300 L955 460"/></g></svg>`,
+ school:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sfl" x2="0" y2="1"><stop stop-color="#cbb98f" stop-opacity=".22"/><stop offset="1" stop-color="#cbb98f" stop-opacity="0"/></linearGradient></defs><rect width="1200" height="700" fill="#171313"/><path d="M0 0 L1200 0 L1200 470 L0 560Z" fill="#221b1a"/><path d="M0 560 L1200 470 L1200 700 L0 700Z" fill="#2c2320"/><path d="M0 470 L1200 380 L1200 560 L0 620Z" fill="url(#sfl)"/><g stroke="#0f0c0c" stroke-width="3"><rect x="60" y="120" width="130" height="330" fill="#33403f"/><rect x="200" y="110" width="130" height="340" fill="#2d3938"/><rect x="870" y="110" width="130" height="340" fill="#2d3938"/><rect x="1010" y="120" width="130" height="330" fill="#33403f"/></g><g fill="#8e7b5c" opacity=".5"><rect x="76" y="150" width="98" height="6"/><rect x="76" y="180" width="98" height="6"/><rect x="216" y="140" width="98" height="6"/><rect x="216" y="170" width="98" height="6"/><rect x="886" y="140" width="98" height="6"/><rect x="1026" y="150" width="98" height="6"/></g><path d="M430 70 L770 70 L730 470 L470 470Z" fill="url(#sfl)"/><g stroke="#c8b487" stroke-width="2" opacity=".35" fill="none"><path d="M430 70 L770 70 L730 470 L470 470Z"/><path d="M600 70 L600 470"/></g><path d="M560 470 L640 470 L700 700 L500 700Z" fill="#0f0b0c" opacity=".25"/></svg>`,
+ night:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="ng"><stop stop-color="#7a1c2d" stop-opacity=".45"/><stop offset="1" stop-color="#0a0810" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="700" fill="#0a0810"/><circle cx="600" cy="350" r="360" fill="url(#ng)"/><g stroke="#8f2233" stroke-width="1" opacity=".3" fill="none"><path d="M0 200 Q300 280 600 180 T1200 220"/><path d="M0 260 Q300 340 600 240 T1200 280"/><path d="M0 440 Q300 520 600 420 T1200 460"/><path d="M0 500 Q300 580 600 480 T1200 520"/></g><circle cx="600" cy="350" r="3" fill="#e0c675"/></svg>`,
+ bonfire:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="fireg"><stop stop-color="#e08a2a" stop-opacity=".5"/><stop offset="1" stop-color="#e08a2a" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="700" fill="#0a0b14"/><circle cx="600" cy="510" r="240" fill="url(#fireg)"/><circle cx="980" cy="115" r="44" fill="#e2e8ec" opacity=".8"/><path d="M0 470 Q260 430 560 468 T1200 450 L1200 700 L0 700Z" fill="#111319"/><path d="M0 560 Q300 520 620 566 T1200 548 L1200 700 L0 700Z" fill="#0a0b0f"/><g stroke="#3a2b22" stroke-width="16" stroke-linecap="round"><path d="M500 610 L700 570"/><path d="M500 570 L700 610"/></g><path d="M600 610 Q540 520 580 470 Q560 520 600 530 Q590 470 620 420 Q640 490 625 528 Q670 500 660 460 Q690 530 640 600Z" fill="#b8481f" opacity=".95"><animate attributeName="opacity" values=".9;1;.88;.97;.9" dur="1.6s" repeatCount="indefinite"/></path><path d="M600 600 Q568 536 596 494 Q590 536 612 550 Q608 508 626 478 Q638 526 620 560 Q648 536 640 512 Q660 560 620 600Z" fill="#e08a2a"/><path d="M604 592 Q590 552 606 526 Q602 556 616 566 Q614 542 624 522 Q632 556 616 578Z" fill="#f0c86a"/><g fill="#f0b45a" opacity=".75"><circle cx="560" cy="410" r="2"/><circle cx="650" cy="390" r="2"/><circle cx="610" cy="350" r="2"/><circle cx="680" cy="450" r="2"/><circle cx="540" cy="470" r="2"/><circle cx="700" cy="360" r="2"/></g><g fill="#05060a"><path d="M400 620 Q400 540 435 540 Q470 540 470 620Z"/><path d="M760 620 Q760 542 795 542 Q830 542 830 620Z"/><path d="M250 650 Q250 580 282 580 Q314 580 314 650Z"/><path d="M900 640 Q900 574 932 574 Q964 574 964 640Z"/></g></svg>`,
+ dusk:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dsky" x2="0" y2="1"><stop stop-color="#2a2233"/><stop offset=".55" stop-color="#3a2b38"/><stop offset="1" stop-color="#12131d"/></linearGradient></defs><rect width="1200" height="700" fill="url(#dsky)"/><circle cx="600" cy="150" r="30" fill="#e6eef6" opacity=".5"/><circle cx="600" cy="150" r="70" fill="#dbe5ef" opacity=".08"/><path d="M0 0 L1200 0 L1200 470 L0 560Z" fill="#171b26" opacity=".7"/><path d="M0 560 L1200 470 L1200 700 L0 700Z" fill="#1b1e28"/><g stroke="#080a10" stroke-width="3"><rect x="60" y="120" width="130" height="330" fill="#222a38"/><rect x="200" y="110" width="130" height="340" fill="#1e2633"/><rect x="870" y="110" width="130" height="340" fill="#1e2633"/><rect x="1010" y="120" width="130" height="330" fill="#222a38"/></g><g fill="#7f8ea6" opacity=".28"><rect x="76" y="150" width="98" height="6"/><rect x="76" y="180" width="98" height="6"/><rect x="216" y="140" width="98" height="6"/><rect x="886" y="140" width="98" height="6"/><rect x="1026" y="150" width="98" height="6"/></g><path d="M560 470 L640 470 L700 700 L500 700Z" fill="#05070b" opacity=".35"/></svg>`,
+ woods:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="wg"><stop stop-color="#8f2233" stop-opacity=".3"/><stop offset="1" stop-color="#050a09" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="700" fill="#070c0b"/><circle cx="600" cy="180" r="300" fill="url(#wg)"/><circle cx="880" cy="120" r="46" fill="#dbe6ea" opacity=".6"/><g fill="#0c1512"><path d="M0 700 L0 180 L70 300 L140 140 L210 320 L280 100 L360 340 L430 160 L500 360 L580 120 L660 340 L740 150 L820 330 L900 110 L980 320 L1060 150 L1140 340 L1200 200 L1200 700Z"/></g><g fill="#0a100e"><path d="M0 700 L60 420 L130 600 L200 380 L280 620 L360 400 L450 640 L540 420 L640 620 L730 400 L830 640 L920 420 L1020 620 L1110 420 L1200 600 L1200 700Z"/></g><g stroke="#1b2a22" stroke-width="8" fill="none"><path d="M120 700 Q150 480 90 260"/><path d="M1080 700 Q1040 460 1110 240"/><path d="M600 700 Q600 500 640 360"/></g><g fill="#9fb6a8" opacity=".15"><circle cx="300" cy="300" r="2"/><circle cx="760" cy="260" r="2"/><circle cx="960" cy="340" r="2"/></g></svg>`,
+ ritual:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="rg"><stop stop-color="#c9a227" stop-opacity=".35"/><stop offset="1" stop-color="#0a0710" stop-opacity="0"/></radialGradient></defs><rect width="1200" height="700" fill="#08060e"/><circle cx="600" cy="360" r="330" fill="url(#rg)"/><g fill="none" stroke="#8f2233" opacity=".55"><circle cx="600" cy="360" r="250" stroke-width="2"/><circle cx="600" cy="360" r="205" stroke-width="1" stroke-dasharray="6 8"/><path d="M600 110 L828 485 L372 485Z" stroke-width="2" opacity=".7"/><path d="M600 610 L372 235 L828 235Z" stroke-width="2" opacity=".7"/></g><g stroke="#c9a227" stroke-width="1" opacity=".5" fill="none"><path d="M600 160 L770 460 L430 460Z"/><circle cx="600" cy="360" r="90"/></g><circle cx="600" cy="360" r="6" fill="#e0c675"><animate attributeName="opacity" values=".5;1;.5" dur="2s" repeatCount="indefinite"/></circle><g fill="#e0c675" opacity=".6"><circle cx="600" cy="110" r="3"/><circle cx="828" cy="485" r="3"/><circle cx="372" cy="485" r="3"/></g></svg>`,
+ dawn:`<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="dawnsky" x2="0" y2="1"><stop stop-color="#3a2c3a"/><stop offset=".5" stop-color="#8a5a52"/><stop offset="1" stop-color="#d9a878"/></linearGradient></defs><rect width="1200" height="700" fill="url(#dawnsky)"/><circle cx="600" cy="470" r="46" fill="#ffe6bc" opacity=".85"/><circle cx="600" cy="470" r="120" fill="#ffe0a8" opacity=".15"/><path d="M0 520 Q300 490 600 520 T1200 510 L1200 700 L0 700Z" fill="#2b2326"/><path d="M0 580 Q360 550 700 590 T1200 570 L1200 700 L0 700Z" fill="#1d191e"/><g stroke="#171319" stroke-width="6" fill="none"><path d="M80 700 Q100 540 60 400"/><path d="M1120 700 Q1090 520 1140 390"/></g><g fill="#ffdca8" opacity=".5"><circle cx="380" cy="300" r="2"/><circle cx="820" cy="260" r="2"/><circle cx="960" cy="340" r="2"/></g></svg>`
+};
+const sceneKeys=Object.keys(scenes);
+sceneKeys.forEach((k,i)=>{const el=document.getElementById('scene'+i);if(el)el.innerHTML=scenes[k];});
+const sceneIndex={};sceneKeys.forEach((k,i)=>sceneIndex[k]=i);
+
+/* ==================== 人物立绘（含表情） ==================== */
+const palettes={
+ elena:{skin:'#d8b49c',hair:'#5a3527',rim:'#c9a227',coat:'#332a33'},
+ damon:{skin:'#cbb0a4',hair:'#171519',rim:'#c25463',coat:'#1b1820'},
+ stefan:{skin:'#d3b6a4',hair:'#252025',rim:'#5fa89a',coat:'#1d2224'},
+ bonnie:{skin:'#9c6a52',hair:'#151216',rim:'#9a7fc0',coat:'#241e2b'},
+ caroline:{skin:'#e3c1a6',hair:'#c9a24a',rim:'#d9a441',coat:'#3a2f28'},
+ matt:{skin:'#d8b49c',hair:'#7a5a3a',rim:'#6f9fc0',coat:'#232c33'},
+ katherine:{skin:'#d6b6a6',hair:'#5a2a24',rim:'#8f2233',coat:'#2a1820'}
+};
+function portraitSVG(k,expr){
+ const p=palettes[k];if(!p)return'';
+ expr=expr||'neutral';
+ const eyes=expr==='smile'?`<path d="M104 134 Q110 129 116 134"/><path d="M126 134 Q132 129 138 134"/>`
+  :expr==='intense'?`<path d="M103 131 L117 133"/><path d="M125 133 L139 131"/><path d="M105 127 L117 126" stroke-width="1"/><path d="M125 126 L137 127" stroke-width="1"/>`
+  :expr==='sad'?`<path d="M104 133 Q110 137 116 133"/><path d="M126 133 Q132 137 138 133"/>`
+  :`<path d="M104 132 Q110 129 116 132"/><path d="M126 132 Q132 129 138 132"/>`;
+ const mouth=expr==='smile'?`<path d="M110 160 Q120 170 130 160" stroke-width="2"/>`
+  :expr==='smirk'?`<path d="M110 162 Q122 168 132 158" stroke-width="2"/>`
+  :expr==='sad'?`<path d="M112 165 Q120 160 128 165" stroke-width="2"/>`
+  :`<path d="M112 162 Q120 167 128 162" stroke-width="2"/>`;
+ const brows=expr==='sad'?`<path d="M103 124 Q110 121 117 125" stroke-width="2"/><path d="M125 125 Q132 121 139 124" stroke-width="2"/>`
+  :expr==='intense'?`<path d="M103 123 L117 127" stroke-width="2.5"/><path d="M125 127 L139 123" stroke-width="2.5"/>`:'';
+ const curls=k==='bonnie'?`<g fill="${p.hair}"><circle cx="76" cy="86" r="26"/><circle cx="104" cy="62" r="28"/><circle cx="138" cy="64" r="27"/><circle cx="164" cy="90" r="24"/></g>`:'';
+ const hair=k==='damon'?`<path d="M72 100 Q70 40 120 38 Q170 40 168 100 L152 78 Q120 58 88 80Z" fill="${p.hair}"/>`
+  :k==='stefan'?`<path d="M70 104 Q66 42 122 38 Q172 40 170 104 Q150 72 118 72 Q92 74 70 104Z" fill="${p.hair}"/>`
+  :k==='caroline'?`<path d="M66 112 Q64 38 122 36 Q180 38 174 116 Q160 78 138 74 Q118 70 100 82 Q80 94 66 112Z" fill="${p.hair}"/><path d="M170 96 Q188 130 176 180" stroke="${p.hair}" stroke-width="10" fill="none"/>`
+  :`<path d="M68 110 Q66 40 120 38 Q174 40 172 110 Q160 84 138 78 Q112 68 92 84 Q78 94 68 110Z" fill="${p.hair}"/>`;
+ const mark=k==='damon'?`<path d="M138 150 l7 -3 -3 6" fill="#8f2233" opacity=".7"/>`:'';
+ return `<svg viewBox="0 0 240 330" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="pg-${k}"><stop stop-color="${p.rim}" stop-opacity=".18"/><stop offset="1" stop-color="${p.rim}" stop-opacity="0"/></radialGradient></defs><ellipse cx="120" cy="170" rx="96" ry="140" fill="url(#pg-${k})"/><path d="M26 330 Q34 224 92 206 L148 206 Q206 224 214 330Z" fill="${p.coat}" stroke="${p.rim}" stroke-opacity=".35"/><path d="M96 198 L120 232 L144 198 L138 186 L102 186Z" fill="${p.skin}"/><ellipse cx="120" cy="132" rx="47" ry="58" fill="${p.skin}"/>${hair}${curls}<g stroke="#3a2622" stroke-width="2" fill="none">${eyes}</g><g stroke="#3a2622" stroke-width="2" fill="none">${mouth}</g><g stroke="#3a2622" fill="none">${brows}</g>${mark}<path d="M74 100 Q74 52 120 48 Q166 52 166 100" stroke="${p.rim}" stroke-opacity=".28" stroke-width="2" fill="none"/></svg>`;
+}
+function setPortrait(k,expr){const el=document.getElementById('portrait');if(!k){el.classList.remove('show');return;}el.innerHTML=portraitSVG(k,expr);el.classList.add('show');}
+
+/* ==================== 状态 ==================== */
+const MOONS=['新月','上弦月','满月','下弦月'];
+const CHAPTERS=['','第一章 · 墓园里的陌生人','第二章 · 走廊里的谎','第三章 · 篝火与月光','第四章 · 觉醒之夜','第五章 · 真相的代价','第六章 · 血月之下','第七章 · 黎明之前'];
+const S={stefan:2,damon:1,self:3,moon:1,night:true,chapter:1,flags:{},node:'c1_0',log:[],step:0};
+const clamp=v=>Math.max(0,Math.min(8,v));
+function updateHUD(){
+ for(const k of ['stefan','damon','self']){
+  document.getElementById('val'+k[0].toUpperCase()+k.slice(1)).textContent=S[k];
+  document.getElementById('bar'+k[0].toUpperCase()+k.slice(1)).style.width=(S[k]/8*100)+'%';
+ }
+ document.getElementById('chapterLabel').innerHTML=CHAPTERS[S.chapter]||CHAPTERS[1];
+ document.getElementById('chapterBar').style.width=Math.min(100,S.step*1.4)+'%';
+ document.getElementById('clockTime').textContent=S.night?'夜晚 · 月光可用':'白天 · 日光之下';
+ document.getElementById('clockMoon').textContent=MOONS[S.moon];
+ document.getElementById('moonIcon').style.setProperty('--shadow',S.moon===2?'0px':S.moon===0?'-24px':S.moon===1?'9px':'-9px');
+}
+function apply(fx){
+ if(!fx)return;
+ for(const k of ['stefan','damon','self'])if(fx[k])S[k]=clamp(S[k]+fx[k]);
+ if(typeof fx.night==='boolean')S.night=fx.night;
+ if(typeof fx.moon==='number')S.moon=fx.moon;
+ if(fx.chapter)S.chapter=fx.chapter;
+ if(fx.flag)S.flags[fx.flag]=true;
+ if(fx.flags)fx.flags.forEach(f=>S.flags[f]=true);
+ updateHUD();
+}
+const isNight=()=>S.night, isFull=()=>S.moon===2, isDay=()=>!S.night;
+const has=f=>!!S.flags[f];
+const fxLabel=f=>{if(!f)return'';const a=[];if(f.stefan)a.push('Stefan '+(f.stefan>0?'+':'')+f.stefan);if(f.damon)a.push('Damon '+(f.damon>0?'+':'')+f.damon);if(f.self)a.push('自我 '+(f.self>0?'+':'')+f.self);return a.join(' · ')};
+
+/* ==================== 剧情节点 · 第一章 ==================== */
+const nodes={
+ c1_0:{"scene":"grave",
+ "enter":{"chapter":1,
+ "night":true,
+ "moon":1},
+ "who":"",
+ "portrait":null,
+ "text":"雨把墓碑洗得发亮。\n你站在父母墓前，手里还攥着那张没来得及交出去的照片。\n\n这是他们离世后的第一个秋天。Mystic Falls 的雨水总带着铁锈味，像是小镇本身在慢慢氧化。你本不该在天黑后还留在这里，可你答应过自己，要把照片读给他们听——哪怕没有人会回答。\n\n照片上是四个人。你、Miranda、Adam，还有小 Jeremy。那是车祸前最后一个夏天，你在海边笑得眼睛眯成一条缝，完全不知道命运已经在看不见的地方拧紧了发条。",
+ "next":"c1_0__2"},
+ c1_0__2:{"scene":"grave",
+ "text":"你从小就被教育要坚强。Miranda Gilbert 生前最爱说的一句话是：\"Elena，眼泪解决不了任何事，但承认难过可以。\"她把这句话说得很轻，像在教你一个秘密，而不是一条规矩。此刻你重复着它，却发现在雨声里它显得那么单薄。你想起最后一次和母亲通电话，她说她做了你最爱吃的烤鸡，等你周末回家。那通电话结束时你们都说了\"我爱你\"，谁都没有预料到那是最后一次。人生里最重要的对话，往往在发生时看起来最平常。\n\n照片的边角已经卷起。你用拇指摩挲着照片上海边的夕阳，那时 Jeremy 还小，趴在你背上睡着了，Adam 举着相机，Miranda 的头发被风吹得有些凌乱。你忽然记起那天你笑的原因——Jeremy 在你耳边说了一个孩子气的笑话，你笑到眼泪都出来了。那时的你还不知道，几年后你会为完全不同的原因流泪。",
+ "next":"c1_0__3"},
+ c1_0__3:{"scene":"grave",
+ "text":"雨持续下了整个下午。你记得天气预报说今晚会转晴，可 Mystic Falls 的天气从来不按预报走——就像这里的人，说出口的话和心里想的从来是两回事。你想起出门前 Jeremy 问你去哪，你说\"出去走走\"，他抬头看了你一眼，那眼神像是在说\"又是这样\"。你已经很久没有对他说过完整的实话了。",
+ "next":"c1_0__4"},
+ c1_0__4:{"scene":"grave",
+ "text":"你最后看了一眼父母的名字，在心里默默说：我开始了。",
+ "next":"c1_1"},
+ c1_1:{"scene":"grave",
+ "who":"Elena",
+ "portrait":"elena",
+ "expr":"sad",
+ "text":"「……我回来了。」\n\n你的声音被雨打散，落在湿漉漉的草地上。墓碑上的名字被水冲刷得格外清晰：Miranda Gilbert，Adam Gilbert。你用指腹描摹那些凹下去的笔画，仿佛这样就能摸到他们最后的样子。\n\n「我把照片带来了。Jeremy 最近还好，他在试着不再用那些药……我想你们会为他高兴。」\n\n你说得很慢，像在和一个不会打断你的听众说话。雨落在伞面上，一下，又一下。\n\n（脚步声。不是从身后，是从墓碑的另一侧。）",
+ "next":"c1_1__2"},
+ c1_1__2:{"scene":"grave",
+ "text":"墓园的泥土松软而潮湿，踩上去会陷下去一点点。你蹲下来，把照片轻轻靠在墓碑底部，用一块小石头压住，怕它被风吹走。\"我做得不好，我知道。\"你对着墓碑说，\"Bonnie 说我最近变得很奇怪，Caroline 觉得我总是心不在焉。我答应过要照顾 Jeremy，可有时候我觉得连自己都照顾不了。\"\n\n你说着说着，声音哽住了。你抬起头，让雨水打在脸上，这样眼泪就有了借口。远处的灯火在雨幕里晕开成一团团模糊的黄，像是这个小镇仅剩的、还在呼吸的证据。",
+ "next":"c1_1__3"},
+ c1_1__3:{"scene":"grave",
+ "text":"你格外记得母亲生前站在这块墓碑旁的样子。她会整理墓前的花，会和\"他们\"说话，语气轻快得像在串门。你小时候觉得奇怪，长大后才明白，那是一种把思念继续下去的方式——只要还在说话，就还没有真正告别。此刻你模仿着她的样子，却觉得自己一点都不像她。",
+ "next":"c1_1__4"},
+ c1_1__4:{"scene":"grave",
+ "text":"你把伞往墓碑的方向倾了倾，像替他们挡雨。",
+ "next":"c1_2"},
+ c1_2:{"scene":"grave",
+ "who":"",
+ "text":"你还没转过身，脑海里先闪过两个人的声音。\n\n一个来自走廊里那句局促的「你好」，清澈、克制，像怕惊扰什么；另一个来自葬礼上递来的手帕，温热、漫不经心，带着你不该觉得熟悉的笑意。\n\n你想起的第一个人，会决定你接下来怎么看这场雨。",
+ "next":"c1_2__2"},
+ c1_2__2:{"scene":"grave",
+ "text":"其实你并不是第一次有这种感觉。自从父母去世后，你常常觉得自己站在一个透明的屏障后面，看着别人正常地生活——他们大笑、争吵、约会、为小事烦恼，而你在屏障那边，觉得这一切既熟悉又陌生。你开始怀疑是不是只有你一个人被留在了原地，时间从你身上碾过去，却忘了带走你。\n\n而此刻，在这片墓园里，那种被隔开的感觉达到了顶点。你听得见脚步声，却辨不清方向；你感觉得到有人在看他，却看不见人。这种悬而未决的状态让你既紧张，又奇怪地……期待。",
+ "next":"c1_2__3"},
+ c1_2__3:{"scene":"grave",
+ "text":"你忽然想起一个问题：如果今晚真的有什么东西在墓碑另一侧等你，你希望那是谁的答案？是父母？是某个你失去的人？还是某个你一直想见、却不敢承认想见的人？这个问题没有来得及想清楚，脚步声就越来越近了。你的身体先于大脑做出反应——你握紧了伞柄，站直了身体，像一个准备迎接什么的人。",
+ "next":"c1_2__4"},
+ c1_2__4:{"scene":"grave",
+ "text":"你不知道的是，命运的分岔往往藏在最不起眼的念头里。",
+ "choices":[{"label":"先想起 Stefan 在走廊说的那句「你好」",
+ "fx":{"stefan":1,
+ "self":1},
+ "next":"c1_3a"},{"label":"先想起葬礼上 Damon 递来的手帕",
+ "fx":{"damon":1,
+ "self":-1},
+ "next":"c1_3b"},{"label":"谁也不想，只听雨声",
+ "req":()=>S.night,
+ "reqLabel":"需夜晚",
+ "fx":{"self":2},
+ "next":"c1_3c"}]},
+ c1_3a:{"scene":"grave",
+ "who":"Elena",
+ "portrait":"elena",
+ "expr":"sad",
+ "text":"他的声音很轻，像是怕惊动什么。\n\n你记得那句「你好」，记得自己当时没有回头。记得他站在储物柜旁，阳光把他的侧脸切成一半明亮一半阴影，记得他喉咙动了动，像是把更重要的话咽了回去。\n\n那时候你不知道，这个连招呼都打得小心翼翼的人，已经在这座小镇上等了你很久。他看你的眼神里有种奇怪的东西——不是陌生人的好奇，而是那种在旧照片里辨认熟悉面孔的专注。",
+ "next":"c1_3a__2"},
+ c1_3a__2:{"scene":"grave",
+ "text":"你想起那个走廊的下午，阳光很好，好到有些不真实。他站在你储物柜旁，手里拿着一本书，看见你时似乎犹豫了一下，然后才开口。那句\"你好\"说得那么轻，像怕惊动一只停在你肩头的蝴蝶。你当时只是点点头，走开了。现在回想起来，你几乎能记起他说话时喉结微微滚动的样子，还有他眼睛里那种想要说更多、却硬生生停住的克制。\n\n为什么你当时没有停下来？这个念头第一次浮出水面，带着一丝你不愿承认的悔意。",
+ "next":"c1_3a__3"},
+ c1_3a__3:{"scene":"grave",
+ "text":"你想起 Stefan 说过的一句话。那是你们第二次见面，他帮你捡起掉落的书，说\"你看起来像是经常走神\"。你说\"只是在想事情\"，他笑了笑，没有追问。那时候你觉得他是个温和的人，现在回想起来，他的温和里有一种刻意——像是在小心翼翼地靠近一只随时会跑掉的动物。",
+ "next":"c1_3a__4"},
+ c1_3a__4:{"scene":"grave",
+ "text":"你想，如果当时停下，一切会不会不同。",
+ "next":"c1_4"},
+ c1_3b:{"scene":"grave",
+ "who":"Elena",
+ "portrait":"elena",
+ "expr":"neutral",
+ "text":"那块手帕是温的。\n\n你当时没敢问，为什么一个陌生人的手会是温的，为什么他在葬礼上看着你的眼神，不像在看一个哀悼者，而像在看一件失而复得的东西。\n\n你只记得自己接过手帕时，指尖碰到他的皮肤——那一瞬的凉意，比雨更真实。他还说了句什么，声音低得像是自言自语：「……和那时候一样。」你没听清，也没敢问。",
+ "next":"c1_3b__2"},
+ c1_3b__2:{"scene":"grave",
+ "text":"葬礼那天下了很大的雨，比今天还大。你穿着黑色的裙子，站在吊唁的人群里，感觉自己像一个漏水的容器。所有人都在安慰你，说着同样的话，拍着你的肩膀。然后他来了——没有人介绍，他自然地走到你身边，递给你一块手帕。\n\n那块手帕很干净，带着一股淡淡的、你后来再也没闻到的味道。你用它擦了脸，然后忘了归还。它现在还在你书桌的抽屉里，叠得整整齐齐。你曾经无数次想，一个陌生人为什么会随身带着手帕，为什么他的手是温的，为什么他看你的眼神让你觉得自己不是透明的了。",
+ "next":"c1_3b__3"},
+ c1_3b__3:{"scene":"grave",
+ "text":"你 never 想过，那块手帕会在后来的日子里变成某种象征。它让你在最狼狈的时候感到了一点体面，一点被人温柔对待的记忆。而现在，当你站在这里回想它，你忽然意识到：你对 Damon 的最初印象，就是从这个小小的、不合时宜的温柔开始的。这让你对接下来要发生的一切，产生了一种宿命般的预感。",
+ "next":"c1_3b__4"},
+ c1_3b__4:{"scene":"grave",
+ "text":"那块手帕的温度，成了你对他最初的全部记忆。",
+ "next":"c1_4"},
+ c1_3c:{"scene":"grave",
+ "who":"",
+ "text":"雨声盖过一切。\n\n你忽然发现自己并不害怕——这比害怕更让你不安。一个正常的女孩，在深夜的墓园听见陌生的脚步，应该尖叫，应该逃跑，至少应该心跳加速。\n\n可你的呼吸很稳。稳得像是你早就知道，这一夜会有人来找你。\n\n你把照片慢慢收进口袋，手指却在发抖。那种平静是假的，你清楚地知道——它只是浮在水面上的一层油，下面藏着整个翻涌的黑色海。",
+ "next":"c1_3c__2"},
+ c1_3c__2:{"scene":"grave",
+ "text":"雨声是一种奇怪的声音。它落在不同的东西上有不同的节奏——打在伞上是急促的鼓点，落在泥地上是沉闷的噗噗声，顺着屋檐流下时又变成连贯的细线。你闭上眼睛，试着只听雨，不去想那个脚步声。\n\n有那么几秒钟，你真的做到了。你觉得自己飘了起来，飘在这片墓园上方，看着伞下那个小小的自己。你忽然想，如果就这样飘走会怎么样？如果你把自己从这个身体里抽出来，是不是就不用面对那些让你害怕的事了？这个念头只持续了一瞬，就被一阵更近的脚步声打断了。",
+ "next":"c1_3c__3"},
+ c1_3c__3:{"scene":"grave",
+ "text":"有那么一瞬间，你几乎要转身离开。这个墓园太冷，雨太大，而这个脚步声太靠近了。你脑子里闪过所有外婆教过你的安全常识——不要在夜里独自待在偏僻的地方，不要和陌生人说话，相信你的直觉。可你的直觉此刻在说什么？它说的是\"留下\"。这个矛盾让你无所适从，最后你选择了一个折中：不动，等，看。",
+ "next":"c1_3c__4"},
+ c1_3c__4:{"scene":"grave",
+ "text":"你第一次发现，冷静有时比恐惧更让人心慌。",
+ "next":"c1_4"},
+ c1_4:{"scene":"grave",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smirk",
+ "text":"「你知道，死人不会听你说话。」\n\n他站在两块墓碑之间，像是本来就在那里。黑色外套没有湿，雨水落在他肩头就滑开了，仿佛他身上有一层看不见的穹顶。\n\n「不过，」他把双手插进口袋，歪头看你，「他们也不需要。需要的一直是活着的人——活着的人才有资格后悔。」\n\n他的声音带着一种漫不经心的沙哑，像很久没有对人说过话，又像是说了太多遍同一句话。",
+ "next":"c1_4__2"},
+ c1_4__2:{"scene":"grave",
+ "text":"他的声音有一种奇怪的质感，低沉、缓慢，每个字都像是经过了深思熟虑才说出口的。你发现自己在留意他的用词——他说\"死人\"，而不是\"逝者\"或\"故人\"，这种直白几乎有些残忍，却又奇怪地诚实。\n\n你不由自主地想象他站在那里的样子：黑色的外套，苍白的皮肤，还有那种与周围格格不入的、过分安静的气质。他站在墓碑之间，像一个来错地方的人，又像一个比这片墓园本身更古老的存在。雨水绕开他的样子，你告诉自己那只是错觉，可你的理智正在发出微弱的、被你强行压下的警报。",
+ "next":"c1_4__3"},
+ c1_4__3:{"scene":"grave",
+ "text":"你终于转过身，看见了他。数据和现场之间有巨大的差距——你想象过无数种\"脚步声的主人\"，却唯独没想过是这样一个人。他年轻，英俊，带着一种与年龄不符的从容。可最让你在意的是他的眼睛——那里面没有恐惧、没有慌乱，只有一种深沉的、仿佛看透了一切的了然。你忽然觉得自己才是那个不该出现在这里的人。",
+ "next":"c1_4__4"},
+ c1_4__4:{"scene":"grave",
+ "text":"你站在原地，任由雨水重新定义这个夜晚。",
+ "next":"c1_5"},
+ c1_5:{"scene":"grave",
+ "who":"",
+ "text":"雨水落在你肩上，却绕开了他的外套。\n\n你的心脏终于开始跳得很快。你有两个选择，也许有三个。也许从你跨进这片墓园开始，选择就已经不在你手里了。\n\n他站在那里，雨水为他让开一条干燥的路，而你的伞在风里微微发抖。",
+ "next":"c1_5__2"},
+ c1_5__2:{"scene":"grave",
+ "text":"你遇到过很多让你心跳加速的时刻——考试发榜、第一次约会、Jeremy 出事的那通电话。但这一次不同。那些时刻的紧张是有名字的，你可以告诉自己\"我害怕\"或\"我期待\"。而此刻的情绪没有名字，它混杂着恐惧、好奇、被冒犯，以及一种更深层的、几乎是本能的识别感，像是身体认出了某个早已遗忘的旧识。\n\n你的手指在伞柄上收紧又松开，反复了好几次。雨水顺着你的手腕流下来，冰凉。你告诉自己要冷静，要像一个正常人那样做出正常人的反应。可是当\"正常\"和\"你此刻的感受\"放在一起时，你发现这两个词第一次无法共存了。",
+ "next":"c1_5__3"},
+ c1_5__3:{"scene":"grave",
+ "text":"你注意到他站的位置——正好在两座墓碑之间，脚下是父母以外的一块无名之地。这个位置让你心里一紧：他为什么要站在那里？是因为那里有他的什么人吗？你想问，却忍住了。今晚有太多问题，你知道自己一次问不完，也未必承受得起所有答案。于是你把这个问题和其他问题一起，暂时锁进心里。",
+ "next":"c1_5__4"},
+ c1_5__4:{"scene":"grave",
+ "text":"你知道，从这一刻起，你再也回不到那个只相信常识的自己了。",
+ "choices":[{"label":"转过身，直视他",
+ "fx":{"damon":2,
+ "stefan":-1,
+ "self":-1,
+ "flag":"direct"},
+ "next":"c1_6a"},{"label":"后退一步，喊 Stefan 的名字",
+ "fx":{"stefan":2,
+ "damon":-1,
+ "self":1},
+ "next":"c1_6b"},{"label":"不说话，数他的影子",
+ "req":()=>S.night,
+ "reqLabel":"需夜晚",
+ "fx":{"damon":1,
+ "self":2,
+ "flag":"shadow"},
+ "next":"c1_6c"}]},
+ c1_6a:{"scene":"grave",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smile",
+ "text":"「Elena Gilbert。你比照片上……更有趣。」\n\n「每个人都认识你。区别在于，他们为你难过，而我为你高兴。」\n\n他向你走近一步。你没有后退。你不知道这是因为勇敢，还是因为你的身体比你的理智更早认出了某种东西——某种和这雨水、这夜晚、这座墓园一样古老的东西。\n\n「我知道你的名字，知道你住哪条街，知道你讨厌数学、喜欢在周五晚上偷喝红酒。」他一项一项数着，像在念一份熟悉的清单，「 You see，我对你了解得比你自己以为的更多。」",
+ "next":"c1_6a__2"},
+ c1_6a__2:{"scene":"grave",
+ "text":"他说话的时候一直在笑，但那笑容没有到达眼睛。你后来会无数次回忆起这一刻，试图分辨那笑容里到底有多少真诚、多少伪装。当时的你只是感到一种被看穿的不安——他列举的每一件事都是真的，这让他的存在变得无法否认。\n\n\"你不觉得奇怪吗？\"你听见自己问，\"一个陌生人，知道我讨厌数学，知道我周五晚上偷喝红酒。\"\n\n\"奇怪？\"他歪了歪头，\"我觉得奇怪的是，你居然还在问我奇不奇怪。你明明已经感觉到了。\"他向前迈了一步，雨水在他脚边分开，\"你感觉到的东西，比你愿意承认的要多得多。\"",
+ "next":"c1_6a__3"},
+ c1_6a__3:{"scene":"grave",
+ "text":"他的每一句话都像在试探，又像在确认。你渐渐发现，和他说话像在下一盘棋——你说的每句话都会被他接住、拆解、然后变成下一句话的筹码。你并不讨厌这种感觉。事实上，在全世界的对话里，你是第一次感到自己的每一句话都被如此认真地对待。只是这种认真，让你分不清是尊重，还是某种更危险的、捕猎般的专注。",
+ "next":"c1_6a__4"},
+ c1_6a__4:{"scene":"grave",
+ "text":"你忽然明白，被看穿和被重视，有时是同一件事。",
+ "next":"c1_7"},
+ c1_6b:{"scene":"grave",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"intense",
+ "text":"他几乎立刻出现，像是从雨里直接长出来的。\n\n你指向墓碑另一侧——那里已经空了，只剩地上一滴没被雨冲掉的红。\n\n「他刚才在这里。」你说。\n\nStefan 的目光落在那滴红上，停了太久。「我知道。」他最后说。语气里有一种你读不懂的疲惫。他站到你和那片空地之间，肩背绷得很紧，像一个准备挡在你面前的人——或者一个准备挡住什么不让你看见的人。",
+ "next":"c1_6b__2"},
+ c1_6b__2:{"scene":"grave",
+ "text":"Stefan 站到你和那片空地之间时，你注意到他的肩膀绷得很紧。那不是面对陌生人的戒备，而是一种更复杂的东西——像一个守着秘密的人，突然发现秘密正要从盒子里溢出来。他的手垂在身侧，指节微微发白。\n\n\"Stefan，\"你轻声说，\"你认识他，对不对？\"\n\n他没有立刻回答。雨水顺着他的头发流下来，滴在他的外套上。过了很久，他才说：\"我认识很多人。这座小镇很小。\"这是一个回避，你知道。而你知道他在回避这件事本身，就已经让今晚的一切都变得不同了。",
+ "next":"c1_6b__3"},
+ c1_6b__3:{"scene":"grave",
+ "text":"Stefan 出现的方式让你愣了一下——你甚至没听见他是怎么来的。这和 Damon 的\"站在那里\"不同，是一种更安静、更隐蔽的出现。你后来会知道，这是他们共同的特点，只是表达方式不同：Damon 让你看见他，Stefan 让你发现他已经在了。从这个细节里，你隐约感觉到了他们性格的分野——一个张扬，一个内敛；一个要你选边，一个默默守候。",
+ "next":"c1_6b__4"},
+ c1_6b__4:{"scene":"grave",
+ "text":"你看见两个兄弟之间，横着一道看不见的旧伤。",
+ "next":"c1_7"},
+ c1_6c:{"scene":"grave",
+ "who":"",
+ "text":"一道，两道。\n\n你数到第三遍才明白：墓灯在他脚下投出两道影子，而其中一道，正朝你这边移动。\n\n他笑了。「你看见了。」\n\n不是惊讶，是确认。仿佛他一直在等有人能看见。雨水穿过你发梢，你忽然想起外婆讲过的故事——关于那些没有影子、或者影子会比人先动的东西。\n\n「大多数人只看他们想看的。」他蹲下来，用指尖碰了碰地上那道多出来的影子，「你不一样。从你在走廊上看见我的那一刻就不一样了。」",
+ "next":"c1_6c__2"},
+ c1_6c__2:{"scene":"grave",
+ "text":"两道影子。这个发现让你想起小时候玩的一个游戏——在地上的影子里找不同。那时你觉得影子是忠实的朋友，它们不会说谎，不会伪装，只会忠实地复制你的样子。可眼前这个人的影子在说谎：它比他本人多了一道，而且那道影子还在移动。\n\n\"你数影子的样子，\"他蹲下来，和你平视，\"像在看一件不可能的东西。\"\n\n\"它确实不可能。\"你说。\n\n\"不可能的事每天晚上都在这座镇上发生。\"他站起身，\"只是没人愿意数。\"他说话时的语气很轻松，可他的眼睛在你数影子的时候，一直紧紧盯着你的脸，像在等待某个答案。",
+ "next":"c1_6c__3"},
+ c1_6c__3:{"scene":"grave",
+ "text":"你数影子的习惯是从小养成的。无聊的时候，你会数路灯下路人的影子，看它们交叠、分离。你从没想过这个幼稚的习惯会在今晚派上用场，更没想过它会让你看见一件\"不可能\"的事。你忽然有点庆幸——庆幸自己保留了那些在别人看来毫无意义的小习惯。正是它们，让你在这个夜晚看见了别人看不见的东西。",
+ "next":"c1_6c__4"},
+ c1_6c__4:{"scene":"grave",
+ "text":"你记住了那两道影子，像记住一个即将揭开的谜。",
+ "next":"c1_7"},
+ c1_7:{"scene":"grave",
+ "who":"",
+ "text":"一个名字已经到了嘴边。\n\n说出口，你会得到保护；咽下去，你会得到一个秘密。\n\n你隐约感觉到，从今晚开始，「知道」和「被保护」会变成两条越走越远的路，而你只能选一条。\n\n雨声里，你听见自己的呼吸。一次，两次。第三次的时候，你必须开口了。",
+ "next":"c1_7__2"},
+ c1_7__2:{"scene":"grave",
+ "text":"你想起外婆说过的一句话：\"选择不是选好的那个，是选你能承担后果的那个。\"外婆是个务实的人，她不相信命运、不相信魔法，只相信人要为自己在每一天的所作所为负责。她去世的时候你没有哭，因为你相信她会赞成你坚强。现在，在这片雨中的墓园里，你第一次怀疑外婆的那套道理是否覆盖了所有的情况。\n\n如果选择的后果连你自己都无法承担呢？如果你根本不知道后果是什么？这些问题在你脑海中盘旋，而雨声催得越来越急，像在倒数。",
+ "next":"c1_7__3"},
+ c1_7__3:{"scene":"grave",
+ "text":"你说出那个名字之前，脑子里闪过了很多人——父母、Jeremy、Bonnie、Caroline。你想着他们，仿佛在向某个看不见的法庭陈述你的理由：你不是任性，你不是鲁莽，你只是想在这个越来越陌生的世界里，抓住一点确定的东西。而那个到了嘴边的名字，就是此刻你唯一觉得确定的东西。",
+ "next":"c1_7__4"},
+ c1_7__4:{"scene":"grave",
+ "text":"每个选择都是一次小小的自我定义。",
+ "choices":[{"label":"说实话：我看见了 Damon",
+ "fx":{"stefan":2,
+ "damon":-1,
+ "self":1},
+ "next":"c1_8a"},{"label":"撒谎：我什么都没看见",
+ "fx":{"damon":2,
+ "stefan":-1,
+ "self":-1},
+ "next":"c1_8b"},{"label":"反问 Stefan：「你早就知道，对吗？」",
+ "req":()=>S.night,
+ "reqLabel":"需夜晚",
+ "fx":{"stefan":-1,
+ "damon":1,
+ "self":2,
+ "flag":"breakTrust"},
+ "next":"c1_8c"}]},
+ c1_8a:{"scene":"grave",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":s=>s.flags.direct?'sad':s.flags.shadow?'intense':'neutral',
+ "text":s=>s.flags.direct?'「他来找你了。」Stefan 的目光越过你，落在那片空地上，「Elena，离他远点。」\n阴影里传来一声轻笑：「哦，别这样，弟弟。」\n你第一次听见他们这样称呼彼此，忽然明白这世上有些关系，光是站在一旁就够危险了。那声「弟弟」像一把钥匙，打开了一扇你还没准备好面对的门。':s.flags.shadow?'「你刚才在看什么？」他顺着你的目光望过去，那里什么都没有。\n「……下次告诉我。」他说。你不知道他是在请求，还是在警告。\n而你也不知道，自己到底是在保护他，还是在保护那个不肯说谎的自己。':'「那就别再一个人来这里。」\n他相信了你。正因为相信，他没有再问第二遍——这比怀疑更让你难受。\n你忽然很想告诉他一切，很想看他在信息面前露出真正的表情。可你没有。雨水替你保守了这个秘密。',
+ "next":"c1_9"},
+ c1_8b:{"scene":"grave",
+ "who":"Elena",
+ "portrait":"elena",
+ "expr":"neutral",
+ "text":"你把那个名字吞了回去。\n\nStefan 看了你很久，说：「……好。」\n\n从今晚起，你们之间多了一样东西。它看不见摸不着，却横在你们之间，像一块慢慢结冰的玻璃。\n\n「你冷吗？」他问。你说不冷。其实你的手指已经僵得握不住伞柄了——但你不想让他知道，你刚刚为了一个陌生人，对他撒了第一个谎。",
+ "next":"c1_8b__2"},
+ c1_8b__2:{"scene":"grave",
+ "text":"撒谎的感觉很差。不是因为撒谎本身道德上有多糟糕，而是因为它立刻在你和 Stefan 之间制造了一段距离。你可以感觉到那段距离——它比雨水更冷，比黑暗更实在。你看着 Stefan 接受你的谎言，看着他点头说\"好\"，你突然很想抓住他的手臂，告诉他一切，把那个压在胸口的东西全部倒出来。\n\n可是你没有。你咬住嘴唇，把冲动咽了回去。你告诉自己这是为了保护他，但内心深处有个更小的声音在说：不，这是为了保护你自己——保护你那个还想被他当作\"正常女孩\"看待的自尊。",
+ "next":"c1_8b__3"},
+ c1_8b__3:{"scene":"grave",
+ "text":"你说完\"什么都没看见\"之后，空气里有几秒钟的沉默。那沉默像一块逐渐凝固的玻璃，横在你和 Stefan 之间。你想伸手把它敲碎，却找不到着力点。你只能站在那里，看着雨水顺着伞骨流下，听着自己的心跳，想着：从现在起，有些东西不一样了，而这一切，是你自己选的。",
+ "next":"c1_8b__4"},
+ c1_8b__4:{"scene":"grave",
+ "text":"那块玻璃从今晚起，会一直横在你和他之间。",
+ "next":"c1_9"},
+ c1_8c:{"scene":"grave",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"sad",
+ "text":"他的表情有一瞬间空白。\n\n「有些事，知道得太早并不会更安全。」\n\n他不再看你。你忽然意识到：你赢了一个问题，输掉了一段信任。有些答案一旦拿到手，你会发现它附带着一张你付不起的账单。\n\n雨水顺着他的下颌滴落。他转身走向墓碑，替你把那束快被淋烂的花扶正，动作很轻，像在照顾一个睡着的人。",
+ "next":"c1_8c__2"},
+ c1_8c__2:{"scene":"grave",
+ "text":"Stefan 说\"知道得太早并不会更安全\"时，他的语气里有一种你从未听过的东西。不是责备，不是生气，而是一种深沉的、几乎像是遗憾的情绪。那一瞬间你意识到，他不是在吓唬你，他是在真心实意地……担心。\n\n\"那你告诉我，\"你追问，\"到底有什么是我该知道的？\"\n\n他转过身，背对着你，声音几乎被雨声淹没：\"等我准备好告诉你的时候，你会知道的。\"这句话让你心里一沉。它意味着他承认了有事情瞒着你，也意味着他要你等待——在一个你已经被卷入的夜晚，要求你耐心等待。",
+ "next":"c1_8c__3"},
+ c1_8c__3:{"scene":"grave",
+ "text":"Stefan 背影的线条在雨里显得格外单薄。你忽然想起第一次见他时，他也是这样站着——微微低着头，像是习惯了对这个世界保持一种退让的姿态。可你今晚才知道，这种退让下面藏着多少不能说的秘密。你看着他，心里涌起一种复杂的情绪：既想追问到底，又怕追到的是一个自己承受不起的答案。",
+ "next":"c1_8c__4"},
+ c1_8c__4:{"scene":"grave",
+ "text":"你看着他的背影，第一次感到了等待的滋味。",
+ "next":"c1_9"},
+ c1_9:{"scene":"grave",
+ "who":"",
+ "text":"他递给你伞。伞柄还是温的。\n\n你第一次觉得，回去的路比来时短。\n\n不是因为路真的变短了，而是因为有人陪你走。你侧头看向他，雨水在他肩上汇成细流，你忽然很想问：你到底是谁？可话到嘴边，只变成一句「谢谢你」。\n\n他笑了笑，没有回答那个你没问出口的问题。远处的钟表敲了十一下，声音穿过雨幕，沉闷得像从水底传来。\n\n你不知道的是，今晚只是开始。",
+ "next":"c1_9__2"},
+ c1_9__2:{"scene":"grave",
+ "text":"回去的路上，雨停了。这是你今晚第一次注意到雨停了——你一直沉浸在雨声里，以至于它消失的时候，你感到一种突兀的空虚。街道湿润的路灯下泛着光，你们两个一前一后地走着，影子被路灯拉长又缩短。\n\n你想说点什么打破沉默，却发现任何话都显得太过刻意。最后你只是看着他的背影，看着这个在今晚之前还只是走廊里一个陌生同学的人，现在却成了你手里那把温热的伞的主人。世界的变化有时候就是这么突然——一夜之间，熟悉的坐标全部失效，你必须重新绘制整个地图。",
+ "next":"c1_9__3"},
+ c1_9__3:{"scene":"grave",
+ "text":"雨停之后，小镇的空气里有一股湿润的、泥土和青草混合的味道。你深吸一口气，觉得头脑清明了一些。Stefan 走在你旁边，始终保持着一个不远不近的距离——近到让你觉得被陪伴，远到不会让你觉得被侵犯。这种分寸感让你感激。你后来才知道，这份分寸，是他用一百四十年的时间学会的。",
+ "next":"c1_9__4"},
+ c1_9__4:{"scene":"grave",
+ "text":"你握着那把温热的伞，走出了自己的旧世界。",
+ "next":"c2_0"},
+ c2_0:{"scene":"school",
+ "enter":{"chapter":2,
+ "night":false},
+ "who":"",
+ "portrait":null,
+ "text":"第二天 · Mystic Falls 高中走廊\n\n整个学校都在传：新来的 Salvatore 兄弟，和 Elena Gilbert 在墓园说过话。\n\n流言这东西比火蔓延得还快。你还没走到储物柜，就已经听见三三两两的窃窃私语在走廊两侧让开一条路——那种让路不是出于尊重，而是出于看热闹的礼貌。你握紧书包带，把昨晚那把伞留在了门口的伞桶里，像是留下一件不该被人看见的证物。",
+ "next":"c2_0__2"},
+ c2_0__2:{"scene":"school",
+ "text":"你一夜没睡好。闭上眼就是那两道影子，睁开眼就是天花板。清晨对着镜子刷牙时，你盯着自己的眼睛看了很久，想从里面找出某种变化——某种昨晚之后应该出现的东西。可它们还是原来的样子，浅褐色，带着熬夜后的红血丝。这让你稍稍安心，又隐隐失望。\n\n上学路上，你特意绕开了墓园的那条街。你说不清是在躲什么。车流、早餐店的香味、背着书包的学生——所有平常的东西此刻都像一层薄薄的、随时会被戳破的纸。",
+ "next":"c2_0__3"},
+ c2_0__3:{"scene":"school",
+ "text":"你对着镜子练习了几种表情——若无其事、轻松、疲惫但平静。你选了\"疲惫但平静\"，因为它最符合你的真实状态，也最不容易引起追问。镜子里的你看起来比实际年龄大了几岁。你忽然想，一夜之间长大是什么感觉？大概就是这样——眼眶下面多了阴影，心里多了秘密，看世界的眼神再也回不到从前。",
+ "next":"c2_0__4"},
+ c2_0__4:{"scene":"school",
+ "text":"你不知道，平静的外表下，整座小镇都在悄悄改变。",
+ "next":"c2_0b"},
+ c2_0b:{"scene":"school",
+ "who":"Caroline",
+ "portrait":"caroline",
+ "expr":"smile",
+ "text":"「Elena！你昨天晚上去墓园了？」Caroline 三点式地堵在你面前，金色长发在阳光下几乎透明，「Damon Salvatore 的车停在加油站，我认得那辆车。天啊，他昨天朝我笑了——朝我！你知道他眼睛是什么颜色吗？深棕色，可是里面有种……很奇怪的东西。」\n\n她说得又快又轻，像在分享一个不能大声讲的秘密。你注意到她说「Damon」时，语气里那种既害怕又着迷的矛盾——那正是你对他的感觉，只是你不肯承认。",
+ "next":"c2_0b__2"},
+ c2_0b__2:{"scene":"school",
+ "text":"Caroline 是那种能把一个秘密在十分钟内传遍全校、却又坚称自己\"最会保守秘密\"的人。你看着她兴奋地比划着，忽然意识到她和 Bonnie 完全不同——Caroline 代表你想留住的那个正常世界：派对、舞会、漂亮的裙子、无可救药的八卦。你曾经是那个世界的一部分，而现在，你站在它的边缘，看着它，像看一场已经散场的电影。\n\n\"你脸色好差，\"Caroline 忽然凑近，\"昨晚到底干嘛去了？\"",
+ "next":"c2_0b__3"},
+ c2_0b__3:{"scene":"school",
+ "text":"Caroline 说话的时候，你一直在观察她的手。她的指甲涂着完美的新指甲油，手指上没有一丝劳作的痕迹。她的人生和你如此不同——她的烦恼是舞会的裙子，你的烦恼是满月的夜晚和会发光的护身符。你羡慕她的轻松，又庆幸她至少还拥有这份轻松。这两种矛盾的感受，是你这段时间最常体会的情绪。",
+ "next":"c2_0b__4"},
+ c2_0b__4:{"scene":"school",
+ "text":"你羡慕 Caroline 的轻松，却也庆幸她尚未知道真相。",
+ "choices":[{"label":"「只是去给父母扫墓。」轻描淡写",
+ "fx":{"self":1,
+ "damon":-1},
+ "next":"c2_0c"},{"label":"反问：「你为什么这么关心？」",
+ "fx":{"self":2,
+ "stefan":-1},
+ "next":"c2_0d"},{"label":"转移话题，问她晚会的事",
+ "fx":{"stefan":1,
+ "self":-1},
+ "next":"c2_0e"}]},
+ c2_0c:{"scene":"school",
+ "who":"Elena",
+ "portrait":"elena",
+ "text":"「只是去给父母扫墓。」你把声音压得很平。\n\nCaroline 眨眨眼，显然不满意这个答案，但她懂得适可而止。「好吧。不过，」她压低声音，「如果我是你，我会离那些 Salvatore 远一点。他们身上有股……说不出的感觉。像夜里开着灯睡觉，明明该安心，却总觉得哪里不对。」\n\n你点点头，没有告诉她，你说这话时，心里想的是 Stefan 递伞时温热的指节。",
+ "next":"c2_0c__2"},
+ c2_0c__2:{"scene":"school",
+ "text":"你说完那句轻描淡写的话，自己都觉得好笑。给父母扫墓——这是多么无懈可击、多么\"正常\"的答案。Caroline 满意地接受了，转头去说别的。你站在原地，忽然觉得\"正常\"是一套你可以随时穿上的戏服，只要拉上拉链，就没人看得见里面那些乱七八糟的裂缝。\n\n可你心里清楚，这套戏服越来越不合身了。",
+ "next":"c2_0c__3"},
+ c2_0c__3:{"scene":"school",
+ "text":"你说出那句\"扫墓\"时，语气平静得让自己都惊讶。你发现撒谎这件事，第一次是困难的，第二次就容易了一些，第三次几乎变成本能。这个发现让你警觉——你不想变成一个随口撒谎的人，可你的生活正在把你推向那个方向。你暗暗发誓，对 Bonnie，至少对 Bonnie，你要一直说真话。",
+ "next":"c2_0c__4"},
+ c2_0c__4:{"scene":"school",
+ "text":"你发现，撒谎的成本，是慢慢失去对自己的信任。",
+ "next":"c2_1"},
+ c2_0d:{"scene":"school",
+ "who":"Caroline",
+ "portrait":"caroline",
+ "expr":"sad",
+ "text":"「你为什么这么关心？」\n\nCaroline 的表情僵了一下，随即堆起笑：「我只是……不想你卷进什么麻烦里。」她后退半步，手指绞着书包带，「你知道Bonnie 的外婆说过什么吗？她说这座小镇有些东西不去招惹最好。我不确定她指的是什么，但我昨晚梦见了狼。」\n\n她的手在抖。你第一次意识到，Caroline 的八卦背后，藏着的是和你一样真实的不安。",
+ "next":"c2_0d__2"},
+ c2_0d__2:{"scene":"school",
+ "text":"Caroline 说起梦见狼的时候，声音里带着一种她自己都没意识到的颤抖。你看着她精心打理的指甲、涂了唇膏的嘴唇，忽然发现她比你想象得要脆弱得多。你们一直把彼此当作\"光鲜的那一个\"，直到今晚你才发现，光鲜下面藏着的不安，一点都不比你的少。\n\n\"我也有奇怪的感觉，\"你听见自己说，\"最近。\"这是你今天第一次对人说出实话的试探。",
+ "next":"c2_0d__3"},
+ c2_0d__3:{"scene":"school",
+ "text":"Caroline 说她梦见狼的时候，你注意到她的手指在发抖。这个细节让你心里一软。你一直以为她是那种刀枪不入的人——永远光鲜，永远快乐，永远生活在表面的世界里。可此刻你发现，她也和你一样，在夜里被奇怪的东西追赶。也许这座小镇上，没有一个人真正睡得安稳。",
+ "next":"c2_0d__4"},
+ c2_0d__4:{"scene":"school",
+ "text":"原来每个人心里，都藏着一个不敢说出口的梦。",
+ "next":"c2_1"},
+ c2_0e:{"scene":"school",
+ "who":"Caroline",
+ "portrait":"caroline",
+ "expr":"smile",
+ "text":"「晚会？」她立刻被成功转移了注意力，「周五的篝火派对，在 Wickery Bridge 附近的空地。Tyler 办的。天啊，你一定要来，Damon 说不定也会——」\n\n她突然捂住嘴，像是说漏了什么。「我是说……大家都会来。」她心虚地笑了笑。\n\n你记住了「篝火」和「Damon」这两个词。它们昨晚还是两条互不相干的线，现在却在Caroline 的嘴里缠到了一起。",
+ "next":"c2_0e__2"},
+ c2_0e__2:{"scene":"school",
+ "text":"篝火派对。这个词从 Caroline 嘴里说出来的瞬间，你脑海里浮现出昨晚火光里 Damon 的脸。你忽然很确定——他会去。这个念头没有来由，却无比坚实，像你已经知道了某件还没发生的事。\n\n\"我会去的。\"你听见自己说。Caroline 高兴地抱了你一下。你没有告诉她，你去的原因和派对本身毫无关系。",
+ "next":"c2_0e__3"},
+ c2_0e__3:{"scene":"school",
+ "text":"你说\"我会去的\"时，Caroline 高兴得几乎跳起来。你看着她，忽然觉得这句话既是对她说的，也是对自己说的——你在向自己承诺，你会走出这段日子，重新回到人群里。你不知道的是，这个承诺很快就会以你完全意想不到的方式兑现。",
+ "next":"c2_0e__4"},
+ c2_0e__4:{"scene":"school",
+ "text":"你说不清为什么去派对，只知道必须去。",
+ "next":"c2_1"},
+ c2_1:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"intense",
+ "text":"「你昨晚去墓园了？别否认，你眼睛下面有泥。」\n\nBonnie 把课本抱在胸前，看着你。她的眼神和 Caroline 完全不同——不是好奇，是一种你已经很熟悉的、知道些什么的沉重。现在是白天，走廊里全是人，阳光把一切都照得无处遁形。\n\n「还有，」她压低声音，「你身上有股味道。不是香水，是……月光。你去过满月下的地方，对不对？」\n\n你的后背泛起一层凉意。昨晚是上弦月，不是满月——除非有什么你在昏乱中没有注意到。",
+ "next":"c2_1__2"},
+ c2_1__2:{"scene":"school",
+ "text":"Bonnie 的手心总是温热的，这是她身上少数几个\"正常\"的东西之一。她握住你的手腕时，你的心跳漏了一拍——你想起昨晚 Damon 也是这样碰你的，可两种触碰完全不同。Bonnie 的温暖是安全的、可以信赖的；而 Damon 的温热里藏着某种让你想要靠近、又想要逃离的东西。\n\n\"你相信我吗？\"Bonnie 问。你看着她的眼睛，用力点了点头。这个点头是真的。",
+ "next":"c2_1__3"},
+ c2_1__3:{"scene":"school",
+ "text":"Bonnie 说\"你眼睛下面有泥\"时，你下意识地摸了摸脸。这个动作出卖了你——如果你真的只是在扫墓，为什么要在意脸上有没有泥？Bonnie 看见了这个动作，眼神里闪过一丝\"果然如此\"的了然。你忽然觉得，在 Bonnie 面前撒谎是徒劳的。她认识你太久了，久到能读懂你最细微的小动作。",
+ "next":"c2_1__4"},
+ c2_1__4:{"scene":"school",
+ "text":"在 Bonnie 面前，你的所有伪装都显得多余。",
+ "choices":[{"label":"把一切告诉 Bonnie",
+ "fx":{"self":2,
+ "damon":-1,
+ "flag":"trustBonnie"},
+ "next":"c2_2a"},{"label":"说那里只有风和雨",
+ "fx":{"self":-1,
+ "damon":1},
+ "next":"c2_2b"},{"label":"等到放学后，在暮色里再找她",
+ "req":()=>!S.night,
+ "reqLabel":"仅白天",
+ "fx":{"self":1,
+ "night":true,
+ "moon":2,
+ "flag":"wait"},
+ "next":"c2_2c"}]},
+ c2_2a:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"sad",
+ "text":"「我外婆说过，有些东西怕被说出口。说出来，它们就真的存在了。」\n\n她握住你的手，掌心温热而有力，「但你要是独自扛着，我会更担心。Elena，我从六岁起就能感觉到这个镇子底下的东西。它们昨晚全醒了。你告诉我，是它们找到了你，还是你找到了它们？」\n\n你把墓园的一切——Damon、两道影子、温热的伞柄——一件件说出来。说完之后，你发现自己第一次轻松地吸了一口气。秘密一旦被分担，就不再是完整的重量。",
+ "next":"c2_2a__2"},
+ c2_2a__2:{"scene":"school",
+ "text":"说出一切之后，你等着 Bonnie 尖叫、后退、或者用看怪物的眼神看你。可是她没有。她只是静静地听完，然后说了一句让你措手不及的话：\"我等你告诉我，已经等了很久了。\"\n\n原来她一直都知道有什么不对。原来你的独自承受，在别人眼里是这样的显而易见。你忽然感到一阵巨大的释然——不是因为问题解决了，而是因为你终于不用再一个人扛着它了。",
+ "next":"c2_2a__3"},
+ c2_2a__3:{"scene":"school",
+ "text":"你对 Bonnie 说完一切后，她沉默了很久。那沉默让你坐立不安——你怕她觉得你疯了，怕她用那种看病人的眼神看你。可当她终于开口，说的却是\"我等你告诉我，已经等了很久了\"。那一刻你鼻子一酸。原来在这座小镇上，你不是唯一一个感到\"不对劲\"的人。你不是一个人。",
+ "next":"c2_2a__4"},
+ c2_2a__4:{"scene":"school",
+ "text":"说出口的瞬间，秘密就不再是秘密，而是连接。",
+ "next":"c2_3"},
+ c2_2b:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"neutral",
+ "text":"她看了你很久，没再问。\n\n只是把那串祖传的护身符塞进你手里：「拿着。以后你会知道为什么。」\n\n「Bonnie——」你想解释，但她摇了摇头。\n\n「不说出来的东西不会消失，」她轻声说，「它只会换个地方待着。比如你的沉默里。」她转身走开，留你一个人站在阳光下，手心里那串铜片冰得发烫。",
+ "next":"c2_2b__2"},
+ c2_2b__2:{"scene":"school",
+ "text":"Bonnie 没有追问的样子让你更难受。如果她逼问、争吵、甚至生气，你起码知道该怎么应对。可她只是把护身符塞给你，然后退开，给你留下一个你无法填补的沉默。\n\n你握着那串冰凉的铜片，忽然明白了一件事：有些信任一旦被辜负一次，就不会像没发生过那样复原。你和 Bonnie 之间，第一次出现了一道你看不见、却真实存在的缝。",
+ "next":"c2_2b__3"},
+ c2_2b__3:{"scene":"school",
+ "text":"你把护身符塞进口袋后，Bonnie 没有再说话。你试图从她的表情里读出点什么，却只看到一片平静。这种平静比任何激烈的反应都让你难受——它像一堵墙，把你们隔开。你想翻过那堵墙，却不知道从何下手。最后你只是说\"谢谢你，Bonnie\"，然后逃也似的离开了图书馆。",
+ "next":"c2_2b__4"},
+ c2_2b__4:{"scene":"school",
+ "text":"你第一次在友谊里，尝到了保留的苦涩。",
+ "next":"c2_3"},
+ c2_2c:{"scene":"dusk",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"neutral",
+ "text":"暮色落下时，你在空荡的走廊又找到她。\n\n满月已经升起，窗玻璃上映着两个人的影子。白天的喧闹退潮了，整所学校像一艘搁浅的船。\n\n「你把我叫回来，是想告诉我什么？」她问。\n\n你看着玻璃上那两道被月光拉长的影子，忽然发现自己的影子和她的不太一样——你的更淡，像随时会被光吞掉。你没有把这件事说出口。",
+ "next":"c2_2c__2"},
+ c2_2c__2:{"scene":"dusk",
+ "text":"暮色里的走廊有一种白天没有的亲密感。空荡荡的储物柜、被夕阳染红的地板、空气里漂浮的灰尘——一切都像是被按下了暂停键。你站在窗前，看着玻璃上那两道被月光拉长的影子，忽然觉得自己和 Bonnie 之间隔着什么。\n\n不是谎言，是某种更古老的东西。你决定今晚不说太多——不是不信任她，而是你还没学会如何把那些连自己都不理解的事讲清楚。",
+ "next":"c2_2c__3"},
+ c2_2c__3:{"scene":"dusk",
+ "text":"暮色里的走廊，让你想起很多个放学的傍晚。以前你总会和 Bonnie、Caroline 一起走，聊些无关紧要的事。现在你一个人站在窗前，看着月光，心里装着说不出口的秘密。你忽然很怀念那些简单的日子——不是因为它们快乐，而是因为它们简单。而现在，你再也回不去那种简单了。",
+ "next":"c2_2c__4"},
+ c2_2c__4:{"scene":"dusk",
+ "text":"暮色给了你勇气，也给了你暂时的庇护。",
+ "next":"c2_3"},
+ c2_3:{"scene":"dusk",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"intense",
+ "text":"她把那串祖传的护身符塞进你手里。铜片冰凉，像是刚从井里捞出来。\n\n「这是我外婆的外婆留下的，」Bonnie 说，「它一直在等一个会需要它的人。我不知道那是谁，但我知道它昨夜一直发烫——从你踏进墓园的那一刻起。」\n\n你低头看着掌心里那枚古朴的铜饰。它看起来像某个古老家族的徽记，边缘刻着细密的纹路，中心是一个模糊的符号。",
+ "next":"c2_3__2"},
+ c2_3__2:{"scene":"dusk",
+ "text":"铜片的重量比看上去要沉。它躺在你的掌心里，带着一种奇怪的、仿佛有生命的温度——忽冷忽热，像在呼吸。你翻来覆去地看它，试图找出它的接缝、它的开关、任何能解释它是什么的线索。什么都没有。它是一整块，天衣无缝，仿佛是从某个更完整的东西上剥离下来的一部分。\n\n\"它选择了你，\"Bonnie 说，\"这是我外婆从来没遇到过的事。\"她看着你的眼神里，有敬畏，也有一丝你不想深究的害怕。",
+ "next":"c2_3__3"},
+ c2_3__3:{"scene":"dusk",
+ "text":"Bonnie 说护身符\"一直在等一个会需要它的人\"时，你低头看着掌心，忽然感到一种责任——或者说是被选中的重量。你不想成为什么\"被选中的人\"，你只想做 Elena，一个普通的、想照顾好弟弟的女孩。可这个铜片显然不这么想。它认了你，而你要么接受，要么承受拒绝它的后果。",
+ "next":"c2_3__4"},
+ c2_3__4:{"scene":"dusk",
+ "text":"铜片贴着掌心，像一颗另有心跳的小小心脏。",
+ "choices":[{"label":"立刻戴上它",
+ "fx":{"self":1,
+ "damon":-1,
+ "flag":"wear"},
+ "next":"c2_4a"},{"label":"放进口袋，不让她看见",
+ "fx":{"self":-1,
+ "damon":1,
+ "flag":"pocket"},
+ "next":"c2_4b"},{"label":"借着月光仔细看它的纹路",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flags":["moonWord","look"]},
+ "next":"c2_4c"}]},
+ c2_4a:{"scene":"dusk",
+ "who":"",
+ "text":"铜片贴上锁骨的一瞬间，你听见远处有人念了你的名字。\n\n那声音很轻，像隔着一层厚厚的水，可你确定那是 Damon 的声音。他在念「Elena」，一遍，又一遍，像在确认你还在这里。\n\nBonnie 的脸色变了：「你还不该听见那个。」她伸手想摘下护身符，却在半空中停住，仿佛害怕碰触它。「……既然它自己认了你，那就别摘了。」",
+ "next":"c2_4a__2"},
+ c2_4a__2:{"scene":"dusk",
+ "text":"远处有人念你名字的声音一直萦绕不散。那声音像是从很远的井底传来，带着回声和水汽。你试图分辨那是谁——Damon？还是别的什么？答案近在咫尺，却总是滑开。\n\nBonnie 看着你戴上护身符后的表情，脸色一点点变白。\"你的眼睛，\"她轻声说，\"它们刚才……变了颜色。\"你想问变成什么颜色，但她摇头，\"不重要了。既然它认了你，就只能这样了。\"",
+ "next":"c2_4a__3"},
+ c2_4a__3:{"scene":"dusk",
+ "text":"远处念你名字的声音，像某种古老的召唤。你想不起那是谁的声音——像是 Damon，又像是某个更遥远、更陌生的人。这个声音在你脑海里盘旋了一整天，挥之不去。你开始怀疑，是不是从你戴上护身符的那一刻起，你和那个声音之间的通道就被打开了。",
+ "next":"c2_4a__4"},
+ c2_4a__4:{"scene":"dusk",
+ "text":"你听见名字的同时，也听见了某种召唤。",
+ "next":"c2_5"},
+ c2_4b:{"scene":"dusk",
+ "who":"",
+ "text":"你把它塞进口袋。Bonnie 没有追问，只是低声说了句：「别在满月时拿出来。」\n\n「为什么？」\n\n「因为满月会让它想起自己本来是什么。」她看着窗外那轮月亮，声音轻得几乎听不见，「而有些东西一旦想起自己是什么，就再也装不回去了。」\n\n你把手插进口袋，指尖摸到铜片上凹凸的纹路，心跳莫名地慢了下来。",
+ "next":"c2_4b__2"},
+ c2_4b__2:{"scene":"dusk",
+ "text":"你把它塞进口袋的瞬间，感觉到它轻轻\"跳\"了一下，像一颗心脏。你吓了一跳，下意识地攥紧口袋。Bonnie 没有看见——或者她看见了，只是假装没有。\n\n后来你才知道，护身符被藏起来的时候，会进入一种休眠状态。它不吵不闹，只是安静地贴着你的腿，像在等待你准备好。那种等待本身，比任何催促都让你感到压力。",
+ "next":"c2_4b__3"},
+ c2_4b__3:{"scene":"dusk",
+ "text":"你把护身符藏起来之后，一整个下午都觉得它在口袋里\"醒着\"。你不停地用手去摸它，确认它还在，确认它没有变成别的东西。这种反复的确认让你烦躁——你讨厌自己变得这么神经质。可你又无法控制。那个声音、那只眼睛，已经在你心里种下了一颗不安的种子。",
+ "next":"c2_4b__4"},
+ c2_4b__4:{"scene":"dusk",
+ "text":"你把它藏进最深的口袋，像藏起一个尚未成形的答案。",
+ "next":"c2_5"},
+ c2_4c:{"scene":"dusk",
+ "who":"",
+ "text":"月光下，护身符背面的刻痕浮出来——不是十字，也不是字母，是一只闭着的眼睛。\n\nBonnie 倒吸一口气：「我外婆从没告诉过我这个。」\n\n你用拇指摩挲那只眼睛。奇怪的是，当你看着它时，你有种强烈的感觉：它也在看你。不是这枚铜片，而是铜片背后某个更古老的东西，正隔着千百年的黑暗，辨认着你脸上的每一寸轮廓。\n\n「闭上眼，」Bonnie 忽然说，「你能感觉到它吗？」你照做了。黑暗里，你听见自己的心跳，和另一个不属于你的、缓慢得多的搏动。",
+ "next":"c2_4c__2"},
+ c2_4c__2:{"scene":"dusk",
+ "text":"那只闭着的眼睛让你着迷。你用指腹一遍遍描摹它的轮廓——眼睑、睫毛、瞳孔的位置。它雕刻得如此精细，以至于你几乎能感觉到它下面藏着的眼珠正在转动。\n\n\"别盯着它太久，\"Bonnie 警告，\"我外婆说过，凝视深渊的人，也会被深渊凝视。\"你笑了笑，想说这只是一个比喻。可当你抬头时，你发现月光下的阴影里，似乎真的有什么东西在回望你。",
+ "next":"c2_4c__3"},
+ c2_4c__3:{"scene":"dusk",
+ "text":"你盯着那只闭着的眼睛看了很久，久到眼睛发酸。你忽然想，它为什么是闭着的？是在沉睡，还是在等待某个时刻睁开？如果它睁开，会看见什么？会看见你吗？这些问题没有答案，却让你着迷。你发现自己对这件古老的东西产生了一种奇怪的亲近感——仿佛你们之间，有一种超越了人和物的联系。",
+ "next":"c2_4c__4"},
+ c2_4c__4:{"scene":"dusk",
+ "text":"那只闭着的眼睛，让你想起某种被压抑的注视。",
+ "next":"c2_5"},
+ c2_5:{"scene":"dusk",
+ "who":"",
+ "text":"手机震动。Stefan 发来消息：「今晚篝火派对，你会来吗？」\n\n屏幕上方，月亮很亮。\n\n你盯着那行字，忽然想起墓园里他那句没问出口的「你到底是谁」。这条短信像一个迟到的出口，让你从傍晚的恍惚里回到现实——一个还有晚会、还有朋友、还有正常生活的现实。",
+ "next":"c2_5__2"},
+ c2_5__2:{"scene":"dusk",
+ "text":"Stefan 的消息让一切都回到了现实。你盯着屏幕，忽然意识到\"篝火派对\"意味着你会再次见到 Damon——在人群中，在火光里，在那个你既渴望又害怕的场合。你的手指悬在键盘上方，迟迟没有落下。\n\n你知道自己在犹豫什么。你害怕见到他，不是因为他危险，而是因为你不确定再次见到他时，你会做出什么。",
+ "next":"c2_5__3"},
+ c2_5__3:{"scene":"dusk",
+ "text":"Stefan 的消息让你在傍晚的恍惚中回到了现实。你盯着那行字，忽然意识到时间还在继续——不管你经历了什么，派对还是要去，朋友还是要见，生活还是要过。这种\"生活的惯性\"既让你安心，又让你厌烦。你最终决定去。部分原因是 Stefan，另一部分原因是——你想看看，当所有的线索都聚集在同一个夜晚，会发生什么。",
+ "next":"c2_5__4"},
+ c2_5__4:{"scene":"dusk",
+ "text":"短短一条消息，重新把你拉回人间。",
+ "choices":[{"label":"回复：我会去",
+ "fx":{"stefan":1,
+ "self":1},
+ "next":"c2_6a"},{"label":"删掉消息，不回",
+ "fx":{"damon":1,
+ "self":-1},
+ "next":"c2_6b"},{"label":"只回一句：「月亮很亮。」",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "damon":1,
+ "flag":"moonWord"},
+ "next":"c2_6c"}]},
+ c2_6a:{"scene":"dusk",
+ "who":"",
+ "text":"他很快回了：「我去接你。」\n\n你把手机塞回口袋，忽然觉得自己像是被人安全地放在了某个盒子里。盒子里没有月光，没有两道影子，没有人用念名字的方式叫醒你。\n\n只有 Stefan。干净、可靠、按门铃而不是站在窗外。\n\n你应该感到安心。你确实感到了安心。那为什么，在安心的最深处，还有一丝几乎察觉不到的、被驯养般的失落？",
+ "next":"c2_6a__2"},
+ c2_6a__2:{"scene":"dusk",
+ "text":"\"我去接你。\"这四个字让心里某个柔软的地方塌陷了一小块。Stefan 是那种会把一切都安排妥当的人——他会到门口，会等你，会把你安全地送到任何地方。这种确定性在今晚显得格外珍贵。\n\n可你躺上床之后，却翻来覆去睡不着。你一遍遍回想\"我去接你\"，觉得它像一句咒语，把你牢牢地钉在了一个安全的、可预测的位置上。而你的心里，有一小部分在不断地说：可是我并不想被接走。",
+ "next":"c2_6a__3"},
+ c2_6a__3:{"scene":"dusk",
+ "text":"你说\"我会去\"之后，很快收到了 Stefan\"我去接你\"的回复。你看着这四个字，心里涌起一种被珍视的感觉。可这种感觉很快被另一种情绪覆盖——你想起 Damon 从没有说过\"我去接你\"，他只会说\"来找我\"，或者什么都不说，只是站在那里等。两个人的关心方式如此不同，而你的心，在这两种不同之间摇摆不定。",
+ "next":"c2_6a__4"},
+ c2_6a__4:{"scene":"dusk",
+ "text":"安全感是一间温暖的屋子，你暂时愿意住进去。",
+ "next":"c2_7"},
+ c2_6b:{"scene":"dusk",
+ "who":"",
+ "text":"消息消失了。你没有告诉任何人。\n\n走廊尽头的窗户里，暮色正在变成夜色。你删掉那条消息的速度，比你预想的要快得多——快得像是在害怕什么，而不是在选择什么。\n\n手机屏幕暗下去的瞬间，你看见自己的倒影：嘴唇抿得很紧，眼睛里有种你不愿承认的倔强。你告诉自己，你只是需要一个人待一会儿。",
+ "next":"c2_6b__2"},
+ c2_6b__2:{"scene":"dusk",
+ "text":"删掉消息的那一刻，你有一种近乎解脱的轻松。没有约定，没有期待，没有需要扮演的角色。今晚你可以只是你自己——一个刚发现世界比想象中复杂的普通女孩。\n\n这种轻松持续了大概十分钟。然后你开始后悔，开始反复打开对话框，开始想他会不会再发一条。你把手机屏幕朝下扣在桌上，强迫自己不去想。但那句被你删掉的\"你会来吗\"，像一根刺，扎在你看不见的地方。",
+ "next":"c2_6b__3"},
+ c2_6b__3:{"scene":"dusk",
+ "text":"你删掉消息的那一刻，心里有种奇异的决绝。你想，就让这场派对成为一个了断——要么你彻底回到正常生活，要么你彻底承认自己已经回不去了。你把手机扔在床上，开始挑选晚上的衣服。你选了一条黑色的裙子，镜子里的你看起来比平时成熟。你不知道这是好事还是坏事。",
+ "next":"c2_6b__4"},
+ c2_6b__4:{"scene":"dusk",
+ "text":"你删掉的不只是消息，还有一个可能的自己。",
+ "next":"c2_7"},
+ c2_6c:{"scene":"dusk",
+ "who":"",
+ "text":"他隔了很久才回：「是的。所以今晚别走太远。」\n\n你盯着那句话，不知道它是警告，还是邀请。\n\n「别走太远」——从 Stefan 嘴里说出来，听起来像是保护；可你莫名想起 Damon 在墓园里说的「每个人都认识你」。两个人都关心你走多远，一个怕你出事，一个怕你逃走。\n\n你把手机扣在桌上，窗外的满月正慢慢爬上教堂的尖顶。",
+ "next":"c2_6c__2"},
+ c2_6c__2:{"scene":"dusk",
+ "text":"\"月亮很亮。\"这四个字发出去之后，你盯着屏幕，像个等待判决的人。你在玩一个危险的游戏——用一句看似无害的话，去试探另一条隐藏的线。如果 Stefan 懂，他会懂；如果不懂，你也没有损失什么。\n\n他的回复等了很久。久到你几乎要放弃、要关掉手机。就在你准备放下的时候，屏幕亮了。那句话让整个夜晚的天平，悄悄地向某个不可预测的方向倾斜了。",
+ "next":"c2_6c__3"},
+ c2_6c__3:{"scene":"dusk",
+ "text":"那句\"月亮很亮\"发出去后，你盯着屏幕，像在等待一个审判。当 Stefan 回复\"今晚别走太远\"时，你的心跳漏了一拍。这句话里既有警告，又有一种近乎纵容的温柔——他没有问你为什么发这句奇怪的话，只是接住了它，用自己的方式回应。你忽然很庆幸，发这句话的人是 Stefan，不是别人。",
+ "next":"c2_6c__4"},
+ c2_6c__4:{"scene":"dusk",
+ "text":"你用一个隐晦的句子，试探了整个夜晚的真相。",
+ "next":"c2_7"},
+ c2_7:{"scene":"dusk",
+ "who":"",
+ "text":"夜色漫过走廊。远处传来音乐声和木柴燃烧的味道。\n\n篝火派对已经开始了。\n\n你朝门口走去，口袋里的护身符安静得像一颗停止跳动的心脏。你不知道今晚等待你的是什么，但你隐隐觉得：那个在墓园里没有回头的女孩，正在一步步走回那片灯光里。",
+ "next":"c2_7__2"},
+ c2_7__2:{"scene":"dusk",
+ "text":"你走向派对的时候，口袋里的护身符突然安静下来。这种安静比它之前的躁动更让你不安——像一个一直在哭闹的孩子突然停止了哭闹，你知道那通常意味着更糟的事。\n\n远处的音乐声越来越清晰，火光在树梢之间闪烁。你深吸一口气，踏入那片光明。在跨过那条边界的瞬间，你回头看了一眼身后的黑暗——它静静地注视着你，像一个被关在门外的客人，耐心地等待下一次被邀请。",
+ "next":"c2_7__3"},
+ c2_7__3:{"scene":"dusk",
+ "text":"你走向派对的时候，心里默默做了一个决定：今晚，你要做一个参与者，而不是旁观者。你要去看看 Damon 的世界、Stefan 的世界、Bonnie 的世界是如何在火光下交汇的。你要去看看，当所有的秘密都挤在同一个夜晚，它们会不会互相碰撞出某种真相。你不知道这个决定会把你带到哪里，但你已经不再害怕未知了。",
+ "next":"c2_7__4"},
+ c2_7__4:{"scene":"dusk",
+ "text":"你跨过那道光，把自己交给了这个不确定的夜晚。",
+ "next":"c3_0"},
+ c3_0:{"scene":"bonfire",
+ "enter":{"chapter":3,
+ "night":true},
+ "who":"",
+ "portrait":null,
+ "text":"火光把每个人的脸都照得一半明亮、一半模糊。\n\nWickery Bridge 附近的空地上，几十个人围着火堆，音乐从一辆车的音响里淌出来，混着笑声和木柴爆裂的噼啪声。Tyler 举着啤酒在人群里穿梭，Caroline 在火光旁跳舞，Matt 靠在车边看着什么人出神。\n\n这是一个再正常不过的夜晚——如果不是你口袋里那枚护身符正在发烫的话。",
+ "next":"c3_0__2"},
+ c3_0__2:{"scene":"bonfire",
+ "text":"你已经很久没有参加过这样的派对了。自从父母去世，你就把所有的邀约都推掉了，理由是\"要照顾 Jeremy\"——这个理由一半是真，一半是盾牌。此刻站在这片空地边缘，看着陌生人笑着、闹着、把啤酒泼在彼此身上，你有一种隔着玻璃看鱼缸的感觉：里面的世界热闹、鲜活、无忧无虑，而你在外面，手指贴在冰凉的玻璃上。\n\n火光把每个人的影子投得很长，在草地上摇晃。你忽然想，如果此刻有人从远处看这座小镇，会不会觉得它温暖而祥和？没有人会知道，就在这片笑声底下，有些东西正在苏醒。",
+ "next":"c3_0__3"},
+ c3_0__3:{"scene":"bonfire",
+ "text":"你在人群边缘站了一会儿，看着 Tyler 举着啤酒大笑，看着 Caroline 随着音乐摇摆，看着几对情侣在火光下依偎。这些画面那么普通，普通到几乎让人忘记，就在几百米外的树林里，有一块会发光的石碑在等着你。你忽然觉得，正常与异常之间的距离，可能只有几百米、十几分钟。一个人可以前一秒还在为派对选裙子，后一秒就站在一个古老仪式的门槛上。",
+ "next":"c3_0__4"},
+ c3_0__4:{"scene":"bonfire",
+ "text":"火光无法照亮的地方，正藏着今晚真正的主角。",
+ "next":"c3_0b"},
+ c3_0b:{"scene":"bonfire",
+ "who":"",
+ "text":"你站在人群边缘，让火光把影子拖得很长。\n\nDamon 拿着酒杯从火堆对面走过来，像穿过一层薄薄的水。人群在他面前无声地分开——不是因为他们让路，而是因为他们没注意到他。您有没有过这种感觉：一个人明明走在你面前，你却看不见他？\n\n此刻的 Damon 就是这样。只有你看见了他。\n\n他举起酒杯，朝你微微扬了扬下巴，笑意藏在火光背后。",
+ "next":"c3_0b__2"},
+ c3_0b__2:{"scene":"bonfire",
+ "text":"人群为 Damon 让开一条无形的路，这让你感到一种诡异的孤独——你是唯一一个\"看见\"他走来的人。他穿过人群的样子那么从容，仿佛他本就该被看见，只是其他人恰好都瞎了。\n\n你举起手里的纸杯，象征性地回应了他的致意。你的心跳得很快，但不是害怕。是一种你已经逐渐熟悉的东西：被一个危险而迷人的存在认出来的战栗。你讨厌自己居然喜欢这种感觉。",
+ "next":"c3_0b__3"},
+ c3_0b__3:{"scene":"bonfire",
+ "text":"你举起杯子回应 Damon 的目光时，心里有种奇怪的笃定：今晚他会来找你，而你不会躲。这种笃定不是勇气，更像是一种疲惫的认命——你已经厌倦了在\"想知道\"和\"不敢知道\"之间反复拉扯。与其继续挣扎，不如走到近处，看清楚这到底是什么。你甚至对自己笑了一下：Elena Gilbert，你居然会为了一个吸血鬼的一杯酒，感到心跳加速。",
+ "next":"c3_0b__4"},
+ c3_0b__4:{"scene":"bonfire",
+ "text":"你是唯一看见他的人，这让你既孤独又特别。",
+ "next":"c3_1"},
+ c3_1:{"scene":"bonfire",
+ "who":"",
+ "text":"他还没有开口，你已经知道自己要往哪边走了——至少你以为你知道。\n\n火堆另一头，Stefan 正站在 Caroline 身边，礼貌地微笑着，目光却越过人群落在你身上。他的眼神里有种安静的恳求，像在说：到这里来，这里安全。\n\n而 Damon 站在几步之外，杯子里的红酒映着火光，像一小汪深不见底的血。\n\n两个人，两条路，一个你。",
+ "next":"c3_1__2"},
+ c3_1__2:{"scene":"bonfire",
+ "text":"火光在你们之间跳动，把一切都染上了一层暧昧的橘红。你看向 Stefan，他正和 Caroline 说着什么，礼貌地微笑着；你看向 Damon，他正举着杯子朝你扬眉。\n\n你的脑海里闪过 Bonnie 的话：\"有些东西不去招惹最好。\"可你已经招惹了——从你在墓园转过身的那一刻起，你就已经把脚踩进了这条河里。既然如此，你决定，至少这一次，要由你来选方向。",
+ "next":"c3_1__3"},
+ c3_1__3:{"scene":"bonfire",
+ "text":"你在心里把这两条路掂量了一遍。走向 Stefan，意味着安全、温暖、一个可以停靠的港湾；走向 Damon，意味着未知、危险、和一种让你无法抗拒的吸引。而走向月亮，意味着——你自己也说不清。你忽然意识到，这三选项像极了你这些天来所有选择的缩影：依赖、沉溺，还是独立。你选的从来不只是一个人，而是一种活法。",
+ "next":"c3_1__4"},
+ c3_1__4:{"scene":"bonfire",
+ "text":"你终于明白，选人就是选一种可能的自己。",
+ "choicesTitle":"这一夜，你走向谁？",
+ "choices":[{"label":"跟 Damon 走到树林边",
+ "fx":{"damon":2,
+ "stefan":-1,
+ "self":-1,
+ "flag":"woodsWithDamon"},
+ "next":"c3_2a"},{"label":"留在 Stefan 身边",
+ "fx":{"stefan":2,
+ "damon":-1,
+ "self":1,
+ "flag":"withStefan"},
+ "next":"c3_2b"},{"label":"独自走进林子，抬头看月亮",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flag":"moonWalk"},
+ "next":"c3_2c"}]},
+ c3_2a:{"scene":"bonfire",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smirk",
+ "text":"「你今晚一直在看我。」他笑了一下，「别担心，我不咬人——至少不是今晚。」\n\n你跟着他走出火光，走进树林边缘那片更深的黑暗。他的眼睛却亮得不正常，像某种夜行动物。\n\n「你知道我为什么来找你吗？」他停在树影里，转身面对你，「因为这镇上所有人都在假装一切都很好。他们的笑、他们的派对、他们的『一切正常』。只有你——」他指了指你的胸口，「你 here 有一道裂缝。我从一眼就看见了。」",
+ "next":"c3_2a__2"},
+ c3_2a__2:{"scene":"bonfire",
+ "text":"树林边缘的空气比火堆旁冷得多，带着松针和泥土的潮湿气味。Damon 走在你前面，步子不紧不慢，仿佛他走过这条路千百次。你跟在他身后，数着他的脚步，忽然意识到你正在做一件疯狂的事：半夜和一个几乎陌生的男人走进黑漆漆的林子。\n\n如果是从前的你，一定会觉得这个念头荒唐透顶。可现在你只是跟着走，仿佛有另一部分的你接管了身体，而那部分的你，比你想的要勇敢得多，也鲁莽得多。",
+ "next":"c3_2a__3"},
+ c3_2a__3:{"scene":"bonfire",
+ "text":"跟着 Damon 走进林子的路上，你想起外婆的一句话：\"离火太近会烫手，可站在远处又太冷。\"你一直想找一个不远不近的位置，既能感受温暖，又不至于被灼伤。可此刻你走在离火最远的黑暗里，却感到一种奇异的、被火光无法替代的吸引。你忽然想，也许你从来就不想要安全的位置，你想要的是——真实的位置，哪怕它很危险。",
+ "next":"c3_2a__4"},
+ c3_2a__4:{"scene":"bonfire",
+ "text":"你走进黑暗，是为了看见光里看不见的东西。",
+ "next":"c3_2a2"},
+ c3_2a2:{"scene":"woods",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"intense",
+ "text":"「那晚在墓园，你爸爸的墓碑旁，」他的声音低下来，「你攥着一张照片。你想把它读给他们听。」\n\n你的呼吸停了一拍。「你怎么知道？」\n\n「因为我也曾经站在一块墓碑前，攥着一样东西，想读给某个再也听不见的人。」他垂下眼，那一瞬间，他脸上所有玩世不恭的笑意都消失了，露出下面一张纯粹的、被什么东西长久折磨着的脸，「Elena，我们比你想的更像。」\n\n你想说不像。可你说不出话。",
+ "next":"c3_2a2__2"},
+ c3_2a2__2:{"scene":"woods",
+ "text":"他说起\"想读给某个再也听不见的人\"时，声音里有了一丝裂缝。那是你第一次在他完美的面具上看到裂痕。你忽然很想知道，是什么样的记忆能让一个看起来什么都不在乎的人，在提到墓碑时声音发抖。\n\n\"我们不像。\"你说，但声音里没有底气。\n\n他看着你，笑了笑，没有反驳。有时候，沉默的承认比语言更响亮。树林深处的猫头鹰叫了一声，你打了个寒颤，说不清是冷，还是因为那句没能说出口的\"我们其实很像\"。",
+ "next":"c3_2a2__3"},
+ c3_2a2__3:{"scene":"woods",
+ "text":"他说\"我们比你想的更像\"时，你的心跳漏了一拍。你想反驳，可那些证据——温热的手、不湿的外套、两道影子——全都在替他说话。你忽然想到一个可怕的可能：如果你们真的很像，那是不是意味着，你也正在变成某种\"不完全\"的东西？这个念头像冰水一样浇下来，让你打了个寒颤。他没有错过你的颤抖，却什么也没说，只是安静地看着你。",
+ "next":"c3_2a2__4"},
+ c3_2a2__4:{"scene":"woods",
+ "text":"你和他之间那点相似，既是桥，也是深渊。",
+ "next":"c3_3"},
+ c3_2b:{"scene":"bonfire",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"neutral",
+ "text":"「你没事吧？」他问。\n\n你点点头，没有告诉他你口袋里的护身符正在发烫。他递给你一杯什么，说是加了姜的汽水，「让你暖和点」。\n\nStefan 站在你身边，替你挡住人群里投来的目光。他什么都没问——关于墓园、关于昨晚、关于你身上那些他说不清的变化。他只是站在那里，用一种近乎固执的耐心陪着你。\n\n「你不需要告诉我任何事，」他像是看穿了你的犹豫，「等你准备好。」\n\n这句话让你心里一软。也让你心里一紧。",
+ "next":"c3_2b__2"},
+ c3_2b__2:{"scene":"bonfire",
+ "text":"Stefan 递来的姜汁汽水带着辛辣的暖意，你捧着杯子，感受着那份温度传到手心。他站在你身边，替你挡住人群的推搡——这个动作那么自然，仿佛他做过无数次。\n\n\"你不用一直这样。\"你说。\n\n\"哪样？\"\n\n\"守着我。\"你顿了顿，\"我又不是小孩。\"\n\n他笑了，笑意里有种你说不清的苦涩：\"我知道你不是。只是……有些习惯，改不掉。\"你看着他，忽然想起 Bonnie 说过，Stefan 总是把所有事都往自己身上扛。也许，守护你只是他众多无法放下的习惯中的一个。",
+ "next":"c3_2b__3"},
+ c3_2b__3:{"scene":"bonfire",
+ "text":"姜汁汽水的味道在你舌尖停留了很久。Stefan 站在你身边，替你挡住人群，这个动作让你想起墓园里他站到你和 Damon 之间的样子。他总是这样——用身体为你筑起一道墙，把危险挡在外面。你感激他，可你也在那一刻意识到：这道墙保护了你，也隔开了你和外面的世界。而你，似乎越来越想看看墙外面到底有什么。",
+ "next":"c3_2b__4"},
+ c3_2b__4:{"scene":"bonfire",
+ "text":"被守护是一种幸福，也是一种温柔的束缚。",
+ "next":"c3_2b2"},
+ c3_2b2:{"scene":"bonfire",
+ "who":"Caroline",
+ "portrait":"caroline",
+ "expr":"smile",
+ "text":"Caroline 凑过来，压低声音：「所以，你选了好的那个。」她朝 Stefan 的方向努努嘴，「聪明。Damon 那种人——天啊，他看着人的方式，像在算你值多少钱。」\n\n你刚想说什么，却看见 Stefan 的表情微微一变。他盯着人群里的某处，眼神陡然冷了下来。\n\n你顺着他的目光看去——空无一人。\n\n「没事。」他迅速恢复微笑，「只是……想起了一些事。」\n\n你第一次意识到，Stefan 的平静下面，压着一块你从未触及过的、黑暗的石头。",
+ "next":"c3_2b2__2"},
+ c3_2b2__2:{"scene":"bonfire",
+ "text":"Caroline 说\"你选了好的那个\"时，语气里带着她自己都没察觉的羡慕。你看着她，忽然意识到在她天真的世界里，\"好\"与\"坏\"是一目了然的——像童话里的王子与恶魔。可你的世界已经不是那样了。你见过 Damon 面具下的裂缝，也见过 Stefan 眼神里的阴影。\n\n当 Stefan 盯着空无一人的地方露出那种冰冷表情时，你心里的某个天平轻轻晃动了一下。原来\"好的那个\"也有秘密。这个发现让你难过，也让你释然——至少，你不再是唯一一个不完美的人了。",
+ "next":"c3_2b2__3"},
+ c3_2b2__3:{"scene":"bonfire",
+ "text":"Caroline 说\"你选了好的那个\"时，你差点笑出声。\"好\"与\"坏\"——如果她知道这两个词在你今晚的世界里已经完全失效，她会怎么想？你看着 Stefan 盯着空处露出的冰冷表情，忽然明白，所谓\"好的那个\"，只是选择相信他不会伤害你而已。而这份相信，本身就需要巨大的勇气。你不确定自己还有多少这样的勇气。",
+ "next":"c3_2b2__4"},
+ c3_2b2__4:{"scene":"bonfire",
+ "text":"你发现\"好人\"的世界，也藏着它自己的阴影。",
+ "next":"c3_3"},
+ c3_2c:{"scene":"woods",
+ "who":"",
+ "text":"林子里没有风，树梢却都在动。\n\n满月悬在你头顶，你第一次觉得它离你很近——近到像是有人在月亮那头看着你。护身符在口袋里烫得几乎灼人，你把它拿出来，那只闭着的眼睛在月光下似乎微微睁开了一道缝。\n\n然后你听见了声音。\n\n不是脚步，是呼吸——缓慢、深沉、不属于任何人的呼吸，从你脚下的泥土里，从你周围的树干里，从月亮本身传出来。\n\n「你在听。」一个声音说。你分不清那是男声还是女声，是近在咫尺还是远在天边。\n\n「你终于在听了。」",
+ "next":"c3_2c__2"},
+ c3_2c__2:{"scene":"woods",
+ "text":"满月在树梢上悬着，圆得近乎不真实。你站在林子里，抬头看着它，忽然想起小时候外婆指着月亮说的话：\"月亮不会发光，它只是反射太阳。可这有什么关系呢？能照亮黑夜的，不一定非要是自己的光。\"\n\n那时你不懂，现在你忽然懂了。你、Damon、Stefan、甚至 Katherine——你们都不发光，你们只是反射着某种更古老、更遥远的东西。而那道声音说\"你终于在听了\"时，你感到一种奇怪的认命感：是啊，你一直在听，只是不肯承认。",
+ "next":"c3_2c__3"},
+ c3_2c__3:{"scene":"woods",
+ "text":"满月在头顶悬着，圆得几乎不真实。你站在林子里，忽然想起小时候在爷爷的旧天文书上读过的一句话：月亮是离我们最近的天体，却也是最陌生的——我们看过它无数次，却从未真正到达过它。你此刻的感觉就是这样：你站在这片月光下，却觉得自己离它、离这今晚会发生的一切，都隔着一层无法穿透的距离。",
+ "next":"c3_2c__4"},
+ c3_2c__4:{"scene":"woods",
+ "text":"满月让一切都显形，包括你一直回避的自己。",
+ "next":"c3_2c2"},
+ c3_2c2:{"scene":"ritual",
+ "who":"",
+ "text":"林子深处出现了一片空地，你发誓白天经过时这里什么都没有。\n\n空地上刻着一圈符号，和你护身符上的如出一辙。符号中心，一只闭着的眼睛正对着月亮。你踏进圈的瞬间，所有声音都消失了——音乐、笑声、风声，全都像被一只手按下静音。\n\n护身符从你掌心浮了起来。\n\n不，是你感觉到它在浮起来。月光穿过它，在地面投下一道细长的影子，那影子慢慢转动，指向小镇的方向。\n\n一个念头清晰地浮进你脑海，不属于你：记住这个方向。当时机到来，你会需要它。",
+ "next":"c3_2c2__2"},
+ c3_2c2__2:{"scene":"ritual",
+ "text":"那片空地像是被时间遗忘了。你踏进去的瞬间，脚下的落叶发出细碎的响声，像某种古老的欢迎仪式。符号在月光下泛着淡淡的光，那只在石碑上闭着的眼睛，让你想起护身符上那只——它们是同一个东西。\n\n当护身符从掌心浮起时，你没有尖叫。你只是站在那里，看着这件不可能的事在你面前发生，心里异常平静。也许，从你踏进墓园的那一刻起，你就已经知道这个世界比你以为的要大得多、也奇怪得多。你只是需要证据。而现在，证据就在你眼前悬浮着。",
+ "next":"c3_2c2__3"},
+ c3_2c2__3:{"scene":"ritual",
+ "text":"护身符在你掌心悬浮的那一刻，你听见了自己的呼吸——平稳、深沉，像某种齿轮咬合般的声音。你惊讶于自己的平静。按理说，你应该害怕，应该尖叫，应该逃跑。可你只是站在那里，看着这件不可能的事，感到一种近乎虔诚的肃穆。也许，在某个你从未触及的层面上，你早就准备好接受这一切了。",
+ "next":"c3_2c2__4"},
+ c3_2c2__4:{"scene":"ritual",
+ "text":"你站在符号中央，第一次感到距离真相如此之近。",
+ "next":"c3_3"},
+ c3_3:{"scene":"bonfire",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"intense",
+ "text":"Bonnie 在火光另一头对你比了个手势：不要一个人待着。\n\n你摸到口袋里的护身符，它的温度已经不像铜了——更像某种活物的体温。\n\n她穿过人群走到你身边，抓住你的手腕，指尖冰凉。「你去了林子，对不对？我感觉到你了。那里的东西……Elena，它们在叫你的名字。」\n\n「我知道。」你说。\n\n她的眼睛睁大了。「你知道？」",
+ "next":"c3_3__2"},
+ c3_3__2:{"scene":"bonfire",
+ "text":"Bonnie 的手势——那个\"不要一个人待着\"的手势——让你心里一紧。她总是能看穿你，即使隔着一群人、隔着一片火光。她的直觉像某种老式的指南针，永远指向你所忽略的危险。\n\n当你说出\"我知道\"时，她的震惊让你意识到，你比她以为的走得更远。你不知道这算不算好事。你只知道，从今晚开始，你和 Bonnie 之间那种毫无保留的亲密，第一次有了阴影——不是因为你不再信任她，而是因为有些真相，说出口就会变成负担，压在你爱的人身上。",
+ "next":"c3_3__3"},
+ c3_3__3:{"scene":"bonfire",
+ "text":"Bonnie 的手势让你心里一紧。她总是能察觉到你最细微的变化——比 Caroline 敏锐，比 Stefan 直接。你忽然想，也许 Bonnie 才是这座小镇上最\"正常\"的人，因为她始终站在真实与虚无的边界上，用她的女巫直觉，为你们这些迷失的人指路。而今晚，她伸出手，比了个\"不要一个人待着\"的手势——这是她能给你的，最朴素的守护。",
+ "next":"c3_3__4"},
+ c3_3__4:{"scene":"bonfire",
+ "text":"Bonnie 的关心，是你在这个夜晚唯一确定的锚。",
+ "choicesTitle":"你把护身符——",
+ "choices":[{"label":"交给 Bonnie，告诉她一切",
+ "fx":{"self":2,
+ "damon":-1,
+ "flag":"tellBonnie"},
+ "next":"c3_4a"},{"label":"藏得更深，谁也不说",
+ "fx":{"self":-1,
+ "damon":1,
+ "flag":"secretKeeper"},
+ "next":"c3_4b"},{"label":"用它试探 Damon 的反应",
+ "req":()=>S.night,
+ "reqLabel":"需夜晚",
+ "fx":{"damon":1,
+ "stefan":-1,
+ "self":1,
+ "flag":"test"},
+ "next":"c3_4c"}]},
+ c3_4a:{"scene":"bonfire",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"sad",
+ "text":"她闭合手掌，铜片在她掌心里安静下来，像一只终于睡去的鸟。\n\n「谢谢你说实话。」她说，「这比什么都重要。」\n\n她握着护身符，闭上眼，喉咙里发出低低的、听不懂的音节。火堆的火焰猛地窜高了一尺，又迅速落回去。\n\n「它认主了。」她睁开眼，脸色苍白，「Elena，它认的是你，不是我。我刚才只是碰巧握住了它。你明白这意味着什么吗？」\n\n你摇头。但你其实已经开始明白了。",
+ "next":"c3_4a__2"},
+ c3_4a__2:{"scene":"bonfire",
+ "text":"铜片在 Bonnie 掌心安静下来的那一刻，火焰猛地窜高——这个细节让你脊背发凉。你和 Bonnie 都看见了，但谁都没有说破。你们默契地假装那只是风。\n\n她说\"它认的是你\"时，语气里有一种你熟悉的无奈——那是她知道自己无能为力时的表情。你想安慰她，想说\"我们一起想办法\"，可话到嘴边却变成了沉默。因为你们心里都清楚：有些东西一旦认了主，就不会再听任何人的话，包括它主人的。",
+ "next":"c3_4a__3"},
+ c3_4a__3:{"scene":"bonfire",
+ "text":"火焰窜高的那个细节，你们谁都没有说破。你看着 Bonnie 握着护身符的侧脸，忽然很想告诉她：别怕，我会小心的。可你说不出口，因为你知道，\"小心\"在这种事情面前是多么无力的词。你只能看着她，用眼神说了一句只有你们俩懂的话——谢谢你愿意陪我走到这里。她回望你，眼里有泪光，也有一种坚定。",
+ "next":"c3_4a__4"},
+ c3_4a__4:{"scene":"bonfire",
+ "text":"你把真相交出去，换来一种久违的轻松。",
+ "next":"c3_4x"},
+ c3_4b:{"scene":"bonfire",
+ "who":"",
+ "text":"你的手指在口袋里攥紧。\n\n「不，」你说，「我没事。真的。」\n\nBonnie 盯着你看了很久，最后松开了手。「有些东西一旦交出去，你就再也不能假装自己什么都不知道了。」她轻声说，「但你藏起来的话——你只是把所有人都关在你的真相外面。包括想帮你的人。」\n\n她转身走回火堆旁。你看着她的背影，第一次怀疑：保护一个秘密，和保护一个人，到底是不是同一件事。",
+ "next":"c3_4b__2"},
+ c3_4b__2:{"scene":"bonfire",
+ "text":"Bonnie 转身走开时，你注意到她的肩膀微微垂了下来。那是一个失望的人的姿态——不是对你生气，而是对你的选择感到无力。你知道她会尊重你的决定，正因为如此，你才更难受。如果她逼你、骂你，你至少可以反驳、可以辯解。可她只是走了，留下你站在原地，被自己的沉默审判。\n\n你把护身符藏得更深，手指碰到口袋的内衬。它安静地贴着你的腿，像一只蜷缩起来的、正在假装睡着的动物。",
+ "next":"c3_4b__3"},
+ c3_4b__3:{"scene":"bonfire",
+ "text":"Bonnie 走开后，你一个人站在火光里，感到一种前所未有的孤独。这种孤独不是没人陪——你身边有几十个人——而是一种更深的东西：你心里装着一些无法与人分享的秘密，而这些秘密把你和周围的人隔开，隔成两个世界。你忽然懂了为什么那些活了一百年的人会显得那么孤独——不是因为他们孤身一人，而是因为他们知道太多别人不知道的事。",
+ "next":"c3_4b__4"},
+ c3_4b__4:{"scene":"bonfire",
+ "text":"你藏起护身符，也藏起了那个想知道的自己。",
+ "next":"c3_4x"},
+ c3_4c:{"scene":"bonfire",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"intense",
+ "text":"你把铜片托在掌心，走到 Damon 面前。\n\n他的笑意慢慢消失。\n\n「你从哪儿拿到的？」他问。声音第一次没有笑。他盯着那枚护身符的样子，不像在看一件古董，而像在看一个他以为早已死去、却突然出现在面前的人。\n\n「一个朋友。」你说，「她外婆留下的。」\n\n「闭嘴。」他低声说，随即意识到自己太用力了，放缓了语气，「……对不起。只是，这个东西不该出现在你手里。它很危险，Elena。对你，对所有人。」\n\n你想问为什么。但他的表情告诉你：他知道的远比他愿意说的多。",
+ "next":"c3_4c__2"},
+ c3_4c__2:{"scene":"bonfire",
+ "text":"Damon 盯着护身符的表情，是你从未见过的。那不是贪婪、不是恐惧，而是一种近乎悲伤的东西——像一个在废墟里认出自己旧居的人。他问\"你从哪儿拿到的\"时，声音第一次没有了那种漫不经心的笑意。\n\n你说\"一个朋友\"时，刻意模糊了 Bonnie 的名字。你不完全知道为什么——也许是想保护她，也许是想看看 Damon 会说出什么。而他说的\"它很危险，对你，对所有人\"，让你心里一沉。他知道的比他说的多，这一点从第一晚起就再清楚不过了。",
+ "next":"c3_4c__3"},
+ c3_4c__3:{"scene":"bonfire",
+ "text":"Damon 盯着护身符的表情，让你第一次怀疑他一直瞒着你的程度。你说\"一个朋友\"的时候，刻意没有提 Bonnie 的名字——你说不清为什么，也许是出于某种保护，也许是出于某种试探。而他接下来的话\"它很危险\"，让你心里一沉。你发现，你急需知道的不再是\"它是什么\"，而是\"他知道多少，又为什么不肯全说\"。",
+ "next":"c3_4c__4"},
+ c3_4c__4:{"scene":"bonfire",
+ "text":"他的慌乱让你确认，他知道得远比说出来得多。",
+ "next":"c3_4x"},
+ c3_4x:{"scene":"bonfire",
+ "who":"",
+ "text":"火堆塌下去一角，火星四散，像一群受惊的萤火虫冲上夜空。\n\nTyler 不知何时开始喊大家的注意，说要玩一个游戏——真心话，围着篝火，每个人说一个从未告诉过别人的秘密。人群起哄着围成一圈。\n\n你被夹在中间，左右两边分别是 Stefan 和 Damon。护身符的余温还在掌心。\n\n游戏开始了。而你意识到，这不过是今晚诸多抉择中的又一个：你可以在这个圈子里说真话，也可以继续编织你那张越来越复杂的谎言之网。",
+ "next":"c3_4x__2"},
+ c3_4x__2:{"scene":"bonfire",
+ "text":"Tyler 的真心话游戏像一个不合时宜的玩笑，把你也卷了进去。你被夹在 Stefan 和 Damon 之间，左边是安全的暖意，右边是危险的凉意，而你口袋里的护身符像第三颗心脏，在你身上一跳一跳。\n\n你看着火堆塌下去的那一角，火星四散，忽然想到：今晚的每一个决定都像这些火星——看起来微不足道，可一旦落下，就会烧出一个无法抹去的印记。游戏开始了，而你已经在心里问了自己无数遍那个问题：你到底要说多少真话？",
+ "next":"c3_4x__3"},
+ c3_4x__3:{"scene":"bonfire",
+ "text":"真心话游戏开始时，你环顾四周，看着这些笑着起哄的年轻人。他们不知道，就在他们的游戏之外，有一场真正关乎生死的抉择正在等待你。这种反差让你感到一种奇特的距离感——仿佛你站在两个世界的交界处，一边是他们的天真，一边是你被迫面对的深沉。而你，精彩地同时属于这两个世界，又完全不属于任何一个。",
+ "next":"c3_4x__4"},
+ c3_4x__4:{"scene":"bonfire",
+ "text":"游戏的喧嚣下，真正的抉择正在你心里成型。",
+ "next":"c3_5"},
+ c3_5:{"scene":"bonfire",
+ "who":"",
+ "text":"轮到你了。\n\n火光在所有人的脸上跳动。Stefan 看着你，眼神温柔而专注；Damon 看着你，眼神深不见底；Bonnie 看着你，眼神里是恳求。\n\nPARTY 的音乐还在继续，可你知道这一夜已经不一样了。天亮之前，你还要做出最后一个决定——一个会决定你站在谁那边、又留下多少自己的决定。\n\n「Elena！」Tyler 起哄，「别让大家等太久！」",
+ "next":"c3_5__2"},
+ c3_5__2:{"scene":"bonfire",
+ "text":"轮到你的时候，整个世界仿佛安静了下来。火光、音乐、笑声全都退成了背景，只剩下三道目光落在你身上：Stefan 的温柔、Damon 的深邃、Bonnie 的恳求。每一种目光都在向你索要一样不同的东西。\n\n你忽然明白，这个游戏对你而言根本不是游戏——它是一个缩影，是你这些天来所有抉择的浓缩。你可以选择对谁诚实、对谁隐瞒，可以选择站在谁那边、把谁推开。你深吸一口气。Tyler 在起哄，可你听不见。你只听见自己的心跳，一下，又一下。",
+ "next":"c3_5__3"},
+ c3_5__3:{"scene":"bonfire",
+ "text":"轮到你的时候，你感到所有人的目光都压在你身上。你忽然想，人生大概就是由这样的时刻组成的——你以为自己还有很多时间，可真正决定一切的，往往就是这几个呼吸之间的选择。你深吸一口气，火光在瞳孔里跳动。你知道，无论你说什么，今晚都会因此改变方向。而你要做的，就是别让自己将来后悔。",
+ "next":"c3_5__4"},
+ c3_5__4:{"scene":"bonfire",
+ "text":"轮到你时，整个世界都在等你的一个决定。",
+ "choicesTitle":"天亮之前，你告诉谁？",
+ "choices":[{"label":"告诉 Stefan 全部真相",
+ "fx":{"stefan":2,
+ "damon":-1,
+ "self":1,
+ "flag":"tellStefan"},
+ "next":"c3_6a"},{"label":"告诉 Damon 全部真相",
+ "fx":{"damon":2,
+ "stefan":-1,
+ "self":-1,
+ "flag":"tellDamon"},
+ "next":"c3_6b"},{"label":"谁也不告诉，自己承担",
+ "fx":{"self":2,
+ "stefan":-1,
+ "damon":-1,
+ "flag":"tellNone"},
+ "next":"c3_6c"}]},
+ c3_6a:{"scene":"night",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"sad",
+ "text":"你把游戏甩在身后，把他拉到僻静处，把一切都说了——护身符、林中的声音、那只眼睛。\n\n他听完后沉默了很久，然后说：「我早就想知道你会选择告诉我。」\n\n他握紧你的手。这只手很凉，但你没有松开。\n\n「有些事我一直想告诉你，」他说，声音低得像怕被夜风听见，「但我不确定你能接受。现在，既然你也知道了这个世界并不像表面那样……也许我们可以一起面对。」\n\n火光在他背后摇曳。你第一次觉得，他的凉意不再可怕。",
+ "next":"c3_6a__2"},
+ c3_6a__2:{"scene":"night",
+ "text":"你把一切都告诉他——不是为了让他保护你，而是因为你终于想通了一件事：如果你要继续走下去，就必须至少有一个人完整地知道你在经历什么。Stefan 是那个人。\n\n他说\"我早就想知道你会选择告诉我\"时，你心里一酸。原来他一直在等，等你自己走过来。他没有逼问、没有拉扯，只是站在那里，像一盏始终亮着的灯。而此刻你终于朝那盏灯走去，发现它为你暖着，从未熄灭。你握住他的手——凉的，但真实。",
+ "next":"c3_6a__3"},
+ c3_6a__3:{"scene":"night",
+ "text":"你把一切都告诉 Stefan 时，他的沉默比任何语言都让你心安。因为你知道，他在认真消化你说的每一个字，而不是急着给出安慰或建议。当他终于握住你的手，说那句\"我早就想知道你会选择告诉我\"时，你心里那块一直悬着的石头终于落了地。原来被信任的感觉是这样——不是被保护，而是被平等的对待，被当作一个能共同承担的人。",
+ "next":"c3_6a__4"},
+ c3_6a__4:{"scene":"night",
+ "text":"信任不是没有秘密，而是选择共同面对。",
+ "next":"c3_7"},
+ c3_6b:{"scene":"night",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smile",
+ "text":"你找到了他。他靠在树林边的树上，像一直在等你。\n\n你把一切都说出来。他听完，笑了一声，却不是嘲笑。\n\n「你比我想的勇敢。」他俯身靠近，「也比我想的傻。」\n\n「为什么是傻？」\n\n「因为真相不是礼物，Elena。它是刀子。」他伸手，指尖轻轻碰了碰你握着护身符的手，「但你拿着它的时候，手很稳。这就是为什么——」他停顿了一下，像是把某个词咽了回去，「这就是为什么我没办法离你远点。」\n\n月光从树叶的缝隙里漏下来，落在他眼睛里，让它变成了一种近乎危险的颜色。",
+ "next":"c3_6b__2"},
+ c3_6b__2:{"scene":"night",
+ "text":"你找到 Damon 时，他靠在树上，像是早就知道你会来。你把真相说出口的那一刻，声音出乎意料地平稳。说完之后，你等着他的反应——嘲笑、沉默、或者转身离开。\n\n他说\"你比我想的勇敢，也比我想的傻\"时，你笑了。因为这是他第一次用这样的话评价你，而你知道，在他那里，\"傻\"是褒义。他靠近的步骤让你心跳加速，可这一次你没有退。你想，也许勇敢和傻本来就是一回事，区别只在于你愿不愿意承认自己在乎。",
+ "next":"c3_6b__3"},
+ c3_6b__3:{"scene":"night",
+ "text":"你找到 Damon，把真相说出口时，他靠在树上，像早就料到你会来。他说\"你比我想的勇敢，也比我想的傻\"时，你笑了——因为你发现，在他那里，\"傻\"和\"勇敢\"从来都是同一个词。他俯身靠近的那一刻，你闻到了他身上淡淡的酒香和某种更深的气息。你没有退。你想，也许今晚之后，你会为这个决定付出代价，但至少此刻，你是诚实的。",
+ "next":"c3_6b__4"},
+ c3_6b__4:{"scene":"night",
+ "text":"在他那里，勇敢和傻从来都是同一个词。",
+ "next":"c3_7"},
+ c3_6c:{"scene":"night",
+ "who":"",
+ "text":"「我什么都没看到，」你大声说，对着起哄的人群笑了一下，「Tyler，你这游戏太无聊了。」\n\n人群失望地起哄，然后又转向下一个人。\n\n你把所有名字——Stefan、Damon、Bonnie、甚至那个林中的声音——都咽了回去。火光照着你一个人的影子，长长地拖过草地。\n\n护身符在口袋里安静下来，仿佛它也理解了你此刻的决定：有些夜晚，你只能一个人走完。",
+ "next":"c3_6c__2"},
+ c3_6c__2:{"scene":"night",
+ "text":"你说\"我什么都没看到\"时，声音里带着一种你自己都陌生的强硬。人群起哄着放过你，转向下一个人。你站在原地，看着火光，忽然觉得自己做了一件正确的事——把所有的名字、所有的秘密都留在自己这里，不让它们成为别人谈论的谈资。\n\n可当你的目光扫过 Bonnie、Stefan 和 Damon 时，你发现他们都在看你。Bonnie 的眼神里有失望，Stefan 的里有担忧，Damon 的里有一种你看不懂的、近乎探究的东西。你忽然怀疑：保护秘密和保护自己，是不是从来都是同一件事的两面？",
+ "next":"c3_6c__3"},
+ c3_6c__3:{"scene":"night",
+ "text":"你说\"我什么都没看到\"的时候，声音里的强硬连自己都觉得陌生。人群放过你，转向下一个人。你站在原地，看着火光，忽然问自己：你到底是保护了什么？是那些人的无知？是 Bonnie 的安全？还是你自己那个不想被当成\"怪人\"的自尊？这些问题没有答案，可它们在你心里翻涌，让你在那个热闹的夜晚，感到一种刺骨的清醒。",
+ "next":"c3_6c__4"},
+ c3_6c__4:{"scene":"night",
+ "text":"你保护了所有人，唯独把自己留在了孤独里。",
+ "next":"c3_7"},
+ c3_7:{"scene":"night",
+ "who":"",
+ "text":"派对散了。人群像退潮一样散去，只剩下熄灭的火堆和一地狼藉。\n\n天快亮了。\n\n你回头看了一眼篝火，又看了一眼小镇。远处教堂的钟楼在晨雾里显出轮廓，护身符在口袋里最后一次发烫，然后彻底安静下来——像一个作出决定后终于睡去的人。\n\n有些夜晚不会结束，它们只是换一种方式跟着你。\n\n你朝家的方向走去。背后，树林里传来一声很轻的、像叹息又像笑声的声音。你知道，从今晚起，有些东西再也回不到原来的位置了。",
+ "next":"c3_7__2"},
+ c3_7__2:{"scene":"night",
+ "text":"派对散场后，空地上一片狼藉——倒空的酒杯、熄灭的余烬、被踩扁的纸盘。你站在这一切中间，忽然想起几个小时前你走进来时的心情：期待、紧张、还有一丝不属于自己的兴奋。现在这一切都过去了，只剩下你和一个已经完全不同的世界。\n\n你往家的方向走，背后的树林里传来那声叹息般的响动。你没有回头。不是因为不怕，而是因为你终于明白：有些声音，你一旦回头去看，就再也走不出这片林子了。有些路，只能一直向前。",
+ "next":"c3_7__3"},
+ c3_7__3:{"scene":"night",
+ "text":"派对散场后，你一个人往回走。空地上的狼藉在你身后渐渐远去，音乐声也淡了。你摸了摸口袋——护身符已经安静下来，像一枚普通的旧铜片。你忽然想，今晚你做出的所有选择——走向谁、告诉谁、藏起什么——都会像这枚护身符一样，在某个时刻归于平静。但它们造成的变化，会像涟漪一样，在你的人生里扩散很久很久。",
+ "next":"c3_7__4"},
+ c3_7__4:{"scene":"night",
+ "text":"有些夜晚不会结束，它只是换一种方式住进你心里。",
+ "next":"c4_0"},
+ c4_0:{"scene":"dawn",
+ "enter":{"chapter":4,
+ "night":false,
+ "moon":3},
+ "who":"",
+ "portrait":null,
+ "text":"第四章 · 觉醒之夜\n\n你几乎没睡。\n\n天亮时，你躺在床上盯着天花板，听见 Jeremy 在隔壁房间翻身的动静。窗外是 Mystic Falls 一个再普通不过的清晨——送奶车、遛狗的老人、阳光穿过百叶窗在地板上画出的一道光。\n\n一切都和昨天一样。除了你。你摸出枕头下的护身符，它在晨光里黯淡无光，像一块普通的旧铜片。可你一夜没合眼，因为每次闭眼，你都看见那只睁开一道缝的眼睛。",
+ "next":"c4_0__2"},
+ c4_0__2:{"scene":"dawn",
+ "text":"Jeremy 敲门问你起不起床吃早饭时，你吓得差点从床上弹起来。\"我做了吐司，\"他说，声音隔着门板传进来，\"你要是不想吃就算了，我放桌上了。\"他的语气里带着一种小心的试探——自从父母去世后，你们俩都学会了不去追问对方的情绪，用食物代替关心。\n\n你走到厨房，看见吐司烤得焦黑一片。Jeremy 已经上学去了，桌上留着一张便利贴：\"姐姐，今天也要好好的。\"你把那张纸捏在手里，看了很久，然后把它折好放进口袋——和护身符放在一起。",
+ "next":"c4_0__3"},
+ c4_0__3:{"scene":"dawn",
+ "text":"你 一夜没睡，这让你在清晨的阳光下感到一种不真实的恍惚。Jeremy 的煎蛋、便利贴上的字、厨房里熟悉的香味——这一切都那么真实，又那么脆弱，像一层薄薄的糖衣，裹着你心里那块正在变质的东西。你忽然很怕，怕有一天这些日常的温暖会突然消失，怕自己再也回不到这个能闻到煎蛋香味的清晨。这种恐惧，比任何超自然的威胁都更让你害怕。",
+ "next":"c4_0__4"},
+ c4_0__4:{"scene":"dawn",
+ "text":"平凡的清晨，是你拼尽全力想要守住的东西。",
+ "next":"c4_1"},
+ c4_1:{"scene":"school",
+ "who":"",
+ "text":"学校里，一切都像被拉长的回声。\n\n你上完一节又一节课，老师的声音像隔着水传来。Caroline 兴奋地复盘昨晚的派对，说 Damon 和她跳了一支舞（你怀疑她夸大了），说 Stefan 一直在看她（你更怀疑）。你勉强笑着，心思却飘在别处。\n\n午休时，你去了图书馆。你想查点东西——关于那枚护身符，关于那只眼睛，关于这座小镇被反复提及却从没人解释清楚的「历史」。\n\nBonnie 已经在那里等你了。她摊开一本厚厚的旧书，脸色比你想象中更苍白。",
+ "next":"c4_1__2"},
+ c4_1__2:{"scene":"school",
+ "text":"图书馆的旧书区有一种特别的味道——纸张发黄、胶水、还有灰尘在阳光里跳舞。这是你从小最喜欢的地方，父母在世时，你常在这里一待就是一下午。可今天，同样的书架、同样的安静，却让你觉得不安。你路过历史区时，脚步不由自主地慢了下来。\n\n你抽出几本关于 Mystic Falls 建镇史的书，摊在桌上。你不知道自己在找什么，只是有一种直觉：答案就藏在这些发黄的纸页里，藏在那些被反复讲述、又被刻意遗忘的故事中。",
+ "next":"c4_1__3"},
+ c4_1__3:{"scene":"school",
+ "text":"图书馆在你眼里从来不是一个安静的地方——它充满了声音：翻页声、咳嗽声、远处管理员整理书籍的动静。可今天，这些声音都退得很远，你只听见自己翻动书页的声音，和心跳。你在历史区找到一本关于建镇史的书，翻开它，就像打开一扇通往一百四十年前的门。你不知道门后面等着你的是什么，但你还是翻了下去。",
+ "next":"c4_1__4"},
+ c4_1__4:{"scene":"school",
+ "text":"答案藏在旧书里，也藏在你一直回避的直觉里。",
+ "next":"c4_2"},
+ c4_2:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"intense",
+ "text":"「我昨晚没睡，」她说，把书推到你面前，「我在查这个符号。它出现在我们家族的旧记载里——很久以前，在这座小镇建立之前。」\n\n书页上是一幅褪色的插图：一群人围着一只巨大的眼睛形状的石碑。图下方的文字你一个字也认不出来。\n\n「这是我们的语言，」Bonnie 指着那些字，「早就没人说了。但它写的是一个警告：『当眼睛睁开，被选中的人将听见亡者的声音。』Elena——」她抬头看你，「你听见了吗？昨晚在林子里，你听见什么了吗？」",
+ "next":"c4_2__2"},
+ c4_2__2:{"scene":"school",
+ "text":"Bonnie 摊开的那本旧书比她的手掌大得多，封皮是深褐色的皮革，边角已经磨损。她翻到某一页，指着上面的插图——你的呼吸停住了。那幅图和护身符上的眼睛一模一样。\n\n\"这是女巫的文字，\"Bonnie 轻声说，\"我们叫它'古语'。现在已经没人会读了，只有外婆教过我一点。\"她的手指在那些弯曲的符号上移动，像在触摸一段沉睡的历史。\"这里写着——\"她停顿了一下，抬头看你，\"'守夜者将醒来'。Elena，昨晚那个声音，是不是在叫你？\"",
+ "next":"c4_2__3"},
+ c4_2__3:{"scene":"school",
+ "text":"Bonnie 摊开的那本古籍有一股霉味，混合着某种你说不出名字的香料气息。她的手指在那些古老的符号上移动，像在弹奏一首失传的曲子。你看着她专注的侧脸，忽然意识到，她比你想象中更了解这座小镇的秘密——她的家族在这里生活了很多代，那些被掩埋的历史，就流淌在她的血液里。而你，只是一个刚刚踏入这扇门的局外人。",
+ "next":"c4_2__4"},
+ c4_2__4:{"scene":"school",
+ "text":"女巫的文字在纸上沉睡，等待有人将它唤醒。",
+ "choices":[{"label":"承认：我听见了一个声音",
+ "fx":{"self":2,
+ "flag":"admitVoice"},
+ "next":"c4_3a"},{"label":"含糊其辞，说只是风声",
+ "fx":{"self":-1,
+ "damon":1},
+ "next":"c4_3b"},{"label":"反问：被选中的人是什么意思？",
+ "fx":{"self":1,
+ "stefan":1,
+ "flag":"askChosen"},
+ "next":"c4_3c"}]},
+ c4_3a:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"sad",
+ "text":"你点了点头，把林中的一切都告诉她——那声音、那只眼睛、那个指向小镇的影子。\n\nBonnie 闭上眼，深深吸了一口气。「我外婆说过，能听见亡者的人，是被祝福的，也是被诅咒的。因为他们站在生与死的门槛上，两边都看得见，两边都不完全属于。」\n\n她握住你的手。「Elena，你最近有没有……更敏锐？比如，知道别人在想什么，或者预见什么？」\n\n你想说没有。但你想起昨晚，你几乎能感觉到 Damon 在想什么——那种近似饥饿的、又克制着的东西。你没有说出口。",
+ "next":"c4_3a__2"},
+ c4_3a__2:{"scene":"school",
+ "text":"说出\"我听见了一个声音\"之后，你等着 Bonnie 的反应。她的表情让你有点害怕——不是惊讶，而是一种\"果然如此\"的确认。\"我昨晚也感觉到了，\"她说，\"不只是你。整个镇子的'那边'都醒了。\"\n\n\"那边是什么？\"\n\n她沉默了一会儿，才说：\"就是……我们看不见，但一直存在的东西。我外婆说，它们平时睡着，但每隔一段时间会醒一次。上一次醒来，是一百四十年前。\"那个数字让你心里一跳——Salvatore 兄弟来到这座小镇，也是一百四十年前。",
+ "next":"c4_3a__3"},
+ c4_3a__3:{"scene":"school",
+ "text":"你说\"我听见了一个声音\"之后，Bonnie 的反应让你松了一口气。如果她尖叫、如果她用那种眼神看你，你不知道自己会怎么办。可她只是点了点头，说\"我等你告诉我，已经等了很久了\"。那一刻你终于确认了一件事：你不是疯了，你不是一个人。这座小镇上，有人和你一样，在那些看不见的东西面前，保持着清醒。",
+ "next":"c4_3a__4"},
+ c4_3a__4:{"scene":"school",
+ "text":"承认听见声音的那一刻，你不再是一个人。",
+ "next":"c4_4"},
+ c4_3b:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"neutral",
+ "text":"「只是风声。」你说。\n\nBonnie 盯着你，眼神里有种让人不安的平静。「好吧。」她合上书，「但你要知道，隐瞒不会让声音消失。它只会让你一个人承受。」\n\n她收拾东西要走，忽然停下。「还有件事。我外婆的笔记里写过一句话：『不要相信那些没有影子的人。』我想了一整晚——」她看着你，「昨晚在墓园，你看见的那个人，他有影子吗？」\n\n你的手心冒出冷汗。你没有回答。",
+ "next":"c4_3b__2"},
+ c4_3b__2:{"scene":"school",
+ "text":"你说\"只是风声\"时，声音连自己都骗不过。Bonnie 看着你，眼神里有种你熟悉的失望——她不喜欢你这样，把真相包起来，塞进一个看似合理的盒子里。\n\n\"好吧，\"她终于说，合上书，\"你不说，我也不逼你。\"她开始收拾东西，动作比平时重。你看着她把书一本本摞起来，忽然很想把一切都说出来。可你想到那个声音、那只眼睛、以及它们可能意味着的代价，话又咽了回去。有些真相，你不敢让它从嘴里出来，因为一旦说出来，它就再也无法收回。",
+ "next":"c4_3b__3"},
+ c4_3b__3:{"scene":"school",
+ "text":"你说\"只是风声\"的时候，声音里连自己都听着假。Bonnie 没有拆穿你，这让你更难受。她收拾东西的动作很重，书一本本摞起来的声音像在数落你的不坦白。你想解释，想说\"我只是还没准备好\"，可这句话听起来太像一个借口。最后你只是坐在那里，看着她离开，心里想着：秘密原来是有重量的，你藏得越久，它就压得你越沉。",
+ "next":"c4_3b__4"},
+ c4_3b__4:{"scene":"school",
+ "text":"秘密的重量，会随着藏匿的时间不断增加。",
+ "next":"c4_4"},
+ c4_3c:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"neutral",
+ "text":"「被选中的人是什么意思？」\n\nBonnie 犹豫了一下。「意思是，某些东西在等人。这枚护身符、这只眼睛、这座小镇底下的东西——它们在等一个特定的人来唤醒它们。它们等了很久，可能是几百年。」\n\n「为什么是我？」\n\n「我不知道。」她轻声说，「但我知道你不是偶然出现在墓园的。你说的那个 Damon——他也不是偶然出现的。你们两个，像是被同一根线牵到那里的。」\n\n你想起 Damon 说的「我们比你想的更像」。两个说法，指向同一个让你不愿深想的可能。",
+ "next":"c4_3c__2"},
+ c4_3c__2:{"scene":"school",
+ "text":"\"'被选中的人'是什么意思？\"你问。Bonnie 的眼神闪烁了一下，像是在犹豫该说多少。\"意思是，\"她慢慢开口，\"有些东西在等人。这座镇子下面埋着的东西，一直在等一个特定的时刻、一个特定的人。护身符出现、你听见声音、Salvatore 兄弟回来——这些不是巧合。\"\n\n\"那我是那个人吗？\"\n\n她深深吸了一口气：\"我不知道。但如果你不是，为什么它会认你？\"这个问题像一块石头，沉进你心里。你忽然想起 Damon 在墓园说的话——\"每个人都认识你\"。也许他说的，不只是这座小镇的人。",
+ "next":"c4_3c__3"},
+ c4_3c__3:{"scene":"school",
+ "text":"\"被选中的人\"这几个字在你脑海里回荡了一整天。你试着把它和自己的经历对照——护身符认了你，声音找上了你，那些古老的符号在你面前显形。这些\"巧合\"越来越多，多到你再也无法用\"巧合\"来解释。你忽然想起一句话：当所有证据都指向同一个方向，而你不愿接受那个方向时，那就不是证据的问题，是你的问题。",
+ "next":"c4_3c__4"},
+ c4_3c__4:{"scene":"school",
+ "text":"你开始怀疑，所谓巧合只是命运换了件外衣。",
+ "next":"c4_4"},
+ c4_4:{"scene":"school",
+ "who":"",
+ "text":"放学后，你独自走回家。夕阳把你的影子拉得很长——一道影子。你反复确认，只有一道。这让你说不清是松了口气，还是失望。\n\n走到 Halfway Home 酒吧门口时，你听见有人叫你的名字。\n\n是 Damon。他坐在酒吧外的台阶上，手里转着一枚硬币，像是等了你很久。\n\n「我们谈谈，」他说，「关于你昨晚拿出来的那个东西。这一次，我会告诉你真相——或者至少，告诉你一部分。」",
+ "next":"c4_4__2"},
+ c4_4__2:{"scene":"school",
+ "text":"放学后的街道被夕阳染成橘红色，你走得很慢，踢着路上的落叶。你想起小时候，父母会在这个时候来接你，一家三口走在同样的街道上，买一个冰淇淋，边走边聊今天发生的事。那些记忆像老照片一样温暖，也像老照片一样遥远。\n\nHalfway Home 酒吧在你眼前出现。它白天看起来那么不起眼——褪色的木招牌、蒙尘的窗户。可你知道，就在昨晚，Damon 在这里等你，用那种仿佛看透一切的语气和你说话。你犹豫了三秒，然后推门——或者没有推门，只是停在台阶上。",
+ "next":"c4_4__3"},
+ c4_4__3:{"scene":"school",
+ "text":"走在放学路上的你，忽然想起很久以前，父母还在的时候，你也会这样一个人走回家。那时你的书包里装着的是作业和零食，脑子里想的是晚上看什么电视。而现在，你的口袋里装着一枚会发光的护身符，脑子里想的是一百四十年前的火灾和一个和你长得一样的女人。你忽然很想念那种简单的无聊——那种只属于\"正常生活\"的无聊。",
+ "next":"c4_4__4"},
+ c4_4__4:{"scene":"school",
+ "text":"你走向酒吧，也走向一个无法回头的答案。",
+ "choices":[{"label":"坐下来，听他说",
+ "fx":{"damon":2,
+ "self":1,
+ "flag":"hearDamon"},
+ "next":"c4_5a"},{"label":"保持距离，站着听",
+ "fx":{"self":2,
+ "damon":-1},
+ "next":"c4_5b"},{"label":"拒绝，径直走开",
+ "fx":{"stefan":1,
+ "self":1},
+ "next":"c4_5c"}]},
+ c4_5a:{"scene":"dusk",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"neutral",
+ "text":"你在他身边坐下。\n\n「那枚护身符，」他开口，「属于一个叫 Katherine 的女人。很久以前，她来到这座小镇，带着一些……不属于这个世界的东西。她改变了这里的一些人。我的哥哥，还有我。」\n\n他停顿了一下，像在斟酌。\n\n「Elena，你相信这个世界上有一种东西，能让一个死了的人继续走路、说话、微笑吗？」\n\n你的心脏猛地一缩。你想起了那两道影子，那双凉手，那句「我不咬人」。\n\n「你在告诉我什么？」你的声音发紧。",
+ "next":"c4_5a__2"},
+ c4_5a__2:{"scene":"dusk",
+ "text":"你在他身边坐下，木头台阶被夕阳晒得温热。Damon 没有立刻说话，只是转动着指间的硬币，一下，又一下。\"你知道吗，\"他终于开口，\"我从没见过有人像你这样。这么害怕，又这么想知道。\"\n\n你看着他。\"知道什么？\"\n\n\"知道我是什么。\"他转过头，直视你，那双眼睛在夕阳下呈现出一种近乎透明的颜色。\"大部分人宁愿不知道。他们喜欢简单的答案——我是个好人，他是坏人，世界是正常的。可你，你不满意简单的答案。\"他停顿了一下，\"这就是为什么我会在这里。\"",
+ "next":"c4_5a__3"},
+ c4_5a__3:{"scene":"dusk",
+ "text":"你在台阶上坐下，木头被夕阳晒得温热，隔着裙子都能感觉到那份暖。Damon 没有急着说话，只是转动着那枚硬币。你看着他的侧脸，忽然发现他和你记忆里那个葬礼上的陌生人没什么两样——同样的漫不经心，同样的从容。只是现在你知道了更多，于是你看他的眼神里，多了一种混合着恐惧和好奇的东西。你自己都觉得这眼神很复杂。",
+ "next":"c4_5a__4"},
+ c4_5a__4:{"scene":"dusk",
+ "text":"他的话像一把钥匙，打开了你不愿碰的抽屉。",
+ "next":"c4_6"},
+ c4_5b:{"scene":"dusk",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smirk",
+ "text":"你站在几步之外，没有坐下。\n\n「继续保持警惕，很好。」Damon 扯了扯嘴角，「那我就长话短说。那枚护身符属于一个叫 Katherine 的女人。她来过这座小镇，改变了很多事——包括我。」\n\n「改变成什么？」\n\n他抬起头看你，夕阳在他眼睛里燃烧。「一个不像你以为的那样简单的人。」他顿了顿，「你想知道真相，Elena。但真相这种东西，站得越远，看得越少。你要么靠近，要么永远猜下去。」\n\n他站起身，拍了拍裤子的灰，走之前留下一句：「想好了，来找我。」",
+ "next":"c4_5b__2"},
+ c4_5b__2:{"scene":"dusk",
+ "text":"你站在几步之外，坚持着某种你说不清的骄傲。Damon 看着你，笑了笑，那笑容里有一种你读不懂的东西——是欣赏？还是嘲讽？\n\n\"站得远一点比较安全，\"他说，\"这是对的。\"他仰头喝了一口杯子里的酒，\"但安全的地方看不到真相。Elena，你迟早要选：是待在安全的地方猜一辈子，还是走近一点，看清楚你到底在怕什么。\"\n\n他说完就站起身，拍了拍裤腿的灰，走进酒吧。你站在原地，夕阳把你的影子拉得很长。你知道他说得对，这也正是让你恼火的地方。",
+ "next":"c4_5b__3"},
+ c4_5b__3:{"scene":"dusk",
+ "text":"你站在几步之外，坚持着某种骄傲。这种骄傲是你仅剩的防线——如果你连距离都不保持，你怕自己会彻底陷进去。Damon 看穿了这一点，所以他说\"站得远一点比较安全，这是对的\"。他总是这样，把你心里的话先说出来，让你无处躲藏。你有点恼火，又有点佩服。这个男人，比你遇到过的所有人都更懂你——而这正是最危险的地方。",
+ "next":"c4_5b__4"},
+ c4_5b__4:{"scene":"dusk",
+ "text":"距离保护了你，也让你错失了看清的机会。",
+ "next":"c4_6"},
+ c4_5c:{"scene":"dusk",
+ "who":"",
+ "text":"你没有任何停顿地走开了。\n\n「Elena！」他在身后叫你，声音里带着一丝意外的笑意，「你比你祖先勇敢多了。」\n\n你没有回头。但那句话在你脑子里生了根——祖先。他为什么提到你的祖先？\n\n你走得很快，直到拐过街角才停下，靠在墙上喘气。你告诉自己你是对的，离那种人越远越好。可你的手，又摸向了口袋里的护身符。",
+ "next":"c4_5c__2"},
+ c4_5c__2:{"scene":"dusk",
+ "text":"你走开的速度快得连自己都惊讶。风把你的头发吹得乱七八糟，你也不管，只是走，走，走，直到双脚带你离开了那条街。\n\n\"你比你祖先勇敢多了。\"他的话在身后追着你。祖先。这个词像一根针，扎在你脑海里某个柔软的地方。你的祖先——Gilbert 家族，这座小镇最早的家族之一。他们发生过什么？为什么 Damon 要提他们？\n\n你停下来，转身，想回去问清楚。可那条街已经空了，只剩下夕阳和它投下的长长影子。",
+ "next":"c4_5c__3"},
+ c4_5c__3:{"scene":"dusk",
+ "text":"你几乎是小跑着离开那条街的。风把头发吹得乱七八糟，你也不管。\"祖先\"这个词像一根针，扎在你心里。Gilbert 家族的历史你了解不多——只知道他们是这座小镇最早的定居者之一。Damon 为什么会提到他们？难道你的家族和这一百四十年的秘密有关？这个念头像藤蔓一样缠绕上来，你越想挣脱，它缠得越紧。",
+ "next":"c4_5c__4"},
+ c4_5c__4:{"scene":"dusk",
+ "text":"\"祖先\"两个字，把你的家族也卷进了这场谜团。",
+ "next":"c4_6"},
+ c4_6:{"scene":"night",
+ "who":"",
+ "text":"那天夜里，你做了一个梦。\n\n梦里，你站在一条陌生的走廊上，穿着一条不属于你的旧裙子。一个声音在很远的地方喊你——不是「Elena」，而是一个你从未听过、却莫名觉得熟悉的名字。\n\n走廊尽头站着一个女人。她背对着你，红发垂到腰际。她转过身，脸上带着一种你无法形容的微笑——亲切、悲伤，还有一丝你只在 Damon 脸上见过的、深不见底的东西。\n\n「你终于来了，」她说，「我等了你很久。」\n\n你想问她是谁。但你醒了。",
+ "next":"c4_6__2"},
+ c4_6__2:{"scene":"night",
+ "text":"那个梦如此清晰，以至于你醒来时还带着梦里的触感——旧裙子的布料贴在腿上，走廊的灰尘在光里漂浮。那个红发女人的脸，你闭着眼都能画出来。她的笑容里藏着太多东西——亲切、悲伤、还有一种近乎认可的神情，仿佛她等这一刻等了很久。\n\n\"我等了你很久。\"她说。这句话在梦里让你心里一酸，醒来后却让你不寒而栗。为什么是\"你\"？她认识你吗？还是她把你看成了另一个人？那个你从未听过却觉得熟悉的名字——它在梦里有温度，醒来后却像水汽一样蒸发了。",
+ "next":"c4_6__3"},
+ c4_6__3:{"scene":"night",
+ "text":"梦里的走廊很长，长得没有尽头。你穿着那条不属于你的旧裙子，赤着脚，地板冰凉。那个红发女人背对着你，她的影子投在墙上，比她本人还要长。当她转过身，露出那张和你一模一样的脸时，你感到一种灵魂层面的震颤——那不是看见别人，是看见某种可能的自己。她说\"我等了你很久\"，声音里带着一百四十年的重量。",
+ "next":"c4_6__4"},
+ c4_6__4:{"scene":"night",
+ "text":"梦里的她对你微笑，像在等一个迟到了很久的人。",
+ "next":"c4_7"},
+ c4_7:{"scene":"night",
+ "who":"",
+ "text":"你猛地坐起，发现自己的枕头是湿的。\n\n窗外是深夜，月亮——满月——高高挂着，把房间照得像白昼。你低头，发现手心里攥着护身符，而它的那只眼睛，此刻是睁开的。\n\n正对着你。\n\n就在这时，你的手机亮了。一条陌生号码的短信，只有四个字：\n\n「别相信他。」\n\n你盯着屏幕，寒意顺着脊椎爬上来。别相信谁？Damon？还是那个刚在梦里对你微笑的女人？",
+ "next":"c4_7__2"},
+ c4_7__2:{"scene":"night",
+ "text":"满月把房间照得像白昼，你在床上坐了很久，盯着桌上那枚护身符。它在月光下呈现出一种你从未见过的光泽——青铜的表面泛着幽幽的绿，那只眼睛睁开了一条缝，正直直地望着你。\n\n手机震动的时候，你几乎是本能地抓起来。屏幕上的光在你的瞳孔里跳动。\"别相信他。\"四个字，像四颗石子投进平静的水面。你的第一个念头是 Damon，第二个念头是——不，也许说的是 Stefan，或者那个梦里的女人。你忽然很害怕，不是害怕某个人，而是害怕自己已经分不清，到底谁说的才是真话。",
+ "next":"c4_7__3"},
+ c4_7__3:{"scene":"night",
+ "text":"满月把房间照得像白昼，你坐在床上，盯着桌上那枚护身符。它那只睁开的眼晴让你感到一种被注视的不安——仿佛它看你的时间，远比你想象的要长。手机震动的时候，你几乎是扑过去的。\"别相信他\"——四个字，四个字里藏着一个你不敢深想的问题：这个\"他\"，是谁？你的手指悬在屏幕上方，迟迟没有落下。你忽然很想找个人商量，却发现这件事你谁也不能说。",
+ "next":"c4_7__4"},
+ c4_7__4:{"scene":"night",
+ "text":"那条短信让你意识到，你已站在无数目光的交点。",
+ "choices":[{"label":"回复：你是谁？",
+ "fx":{"self":1,
+ "flag":"replyMsg"},
+ "next":"c4_8a"},{"label":"把短信删掉，当作没看见",
+ "fx":{"self":-1,
+ "damon":1},
+ "next":"c4_8b"},{"label":"拿着护身符，走出家门",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flag":"nightWalk"},
+ "next":"c4_8c"}]},
+ c4_8a:{"scene":"night",
+ "who":"",
+ "text":"你回复：你是谁？\n\n几秒钟后，对方回了：「一个和你很像的人。小心那些活得太久的人——他们最擅长的，就是让你觉得被理解。」\n\n然后号码就再也打不通了。\n\n你盯着那条消息，心里冒出一个荒唐的念头：这会不会是 Katherine 本人的声音？那个梦里的红发女人？如果她真如 Damon 所说「改变了很多人」，那她现在还活着吗？\n\n你想起外婆讲过的那些故事——关于不老不死、关于午夜、关于 lovecraft 式的小镇秘密。你一直以为那只是故事。",
+ "next":"c4_8a__2"},
+ c4_8a__2:{"scene":"night",
+ "text":"你发出\"你是谁\"之后，手机沉默了很久。久到你以为不会有回复了，屏幕却突然亮起。对方说：\"一个和你很像的人。\"你的手指僵住了。\"小心那些活得太久的人——他们最擅长的，就是让你觉得被理解。\"\n\n你盯着这句话，一遍又一遍。\"活得太久的人\"——Damon？Stefan？还是那个红发女人？你说不清。但你注意到一件事：对方用了\"理解\"这个词。而今晚，Damon 正是用\"我理解你\"让你坐下来的。这个巧合让你后背发凉。",
+ "next":"c4_8a__3"},
+ c4_8a__3:{"scene":"night",
+ "text":"对方的回复让你后背发凉。\"一个和你很像的人\"——这句话在梦的余温里，指向了那个红发女人。你盯着屏幕，手指冰凉。\"活得太久的人\"——如果这话指的是 Damon 或 Stefan，那发信人知道他们的秘密；如果指的是 Katherine，那她是在警告你不要相信她自己。无论哪种可能，都让你陷入一个更深的迷宫。你第一次感到，真相不是一个点，而是一张网。",
+ "next":"c4_8a__4"},
+ c4_8a__4:{"scene":"night",
+ "text":"你发现自己走进了一张由善意和谎言共同织成的网。",
+ "next":"c4_9"},
+ c4_8b:{"scene":"night",
+ "who":"",
+ "text":"你删掉了短信。\n\n屏幕暗下去，房间重新被月光照亮。你对着空荡荡的手机屏幕说：「我不需要陌生人的警告。」\n\n可你的声音在空房间里显得很单薄。\n\n你把手机塞到枕头下，强迫自己闭上眼。但那天晚上，你再也没能睡着。每一次快要沉入睡眠，那只睁开的眼晴就会浮现在你脑海里，盯着你，像在等你自己想明白什么。",
+ "next":"c4_8b__2"},
+ c4_8b__2:{"scene":"night",
+ "text":"你删掉短信，把手机塞进枕头下面，仿佛这样就能把那个声音也一起埋掉。你在黑暗里睁着眼，听着自己的呼吸声。\n\n\"无知是安全的，\"外婆说过，\"无知是安全的。\"可你已经被那条短信、那个梦、那只眼睛搅得无法回到无知。你想起一句老话：你不能捡起一样东西，又假装它不在你手里。真相就是这样一样东西——你一旦碰过，就再也放不下了。",
+ "next":"c4_8b__3"},
+ c4_8b__3:{"scene":"night",
+ "text":"你删掉短信，把手机塞进枕头下，仿佛这样就能把那个声音也一起埋掉。你在黑暗里睁着眼，听时钟的秒针一格格走动。外婆说过\"无知是安全的\"，可你已经不可能回到无知了。你想起一句老话：你不能捡起一样东西，又假装它不在你手里。真相就是这样一样东西——你一旦碰过，它就永远改变了你，再也放不回去了。",
+ "next":"c4_8b__4"},
+ c4_8b__4:{"scene":"night",
+ "text":"真相一旦被触碰，就再也放不回原处。",
+ "next":"c4_9"},
+ c4_8c:{"scene":"woods",
+ "who":"",
+ "text":"你穿上外套，拿着护身符走出家门。\n\n小镇在满月下睡着，街道空无一人。护身符在你手心里一跳一跳，像一颗心脏，指引着你穿过街道，走向镇子边缘那片树林。\n\n昨晚那个刻着符号的空地还在。月亮正悬在它正上方，符号在月光下泛着微光。你走进圈里，护身符骤然发烫——\n\n一个画面冲进你的脑海：一座老宅，一场大火，一个女人尖叫着奔跑，她的脸在火光里扭曲。然后是一只手——一只苍白、修长的手——伸进火里，抓住了什么。\n\n画面消失了。你跪在地上，大口喘气。",
+ "next":"c4_8c__2"},
+ c4_8c__2:{"scene":"woods",
+ "text":"你走出家门时，小镇正在满月下沉睡。街道两旁的房子黑着灯，只有路灯投下昏黄的光圈。你握着护身符，它在掌心里一跳一跳，像在给你指路。你跟着它穿过街道，走过教堂，走向镇子边缘那片你发誓再也不去的树林。\n\n\"我疯了，\"你对着空无一人的街道说。可是你的脚步没有停。那个画面——火中的女人、伸进火里的手——在你脑海里反复播放。你忽然很想见那个女人，想问她：你是谁？你和我有什么关系？为什么所有人都把你和一百四十年前的事牵扯在一起？",
+ "next":"c4_8c__3"},
+ c4_8c__3:{"scene":"woods",
+ "text":"你走出家门时，小镇正在满月下沉睡。你握着护身符，它一跳一跳，像在给你指路。你穿过街道，走过教堂，走向那片你发誓再也不去的树林。路上你没有遇见一个人——仿佛整座小镇都在配合你，为你留出这条通往秘密的路。你忽然想，这不是偶然。是某种力量在引导你，一步一步，走向那个你既渴望又恐惧的真相。而你，居然心甘情愿。",
+ "next":"c4_8c__4"},
+ c4_8c__4:{"scene":"woods",
+ "text":"你跟着那道光，走向那个既渴望又恐惧的答案。",
+ "next":"c4_9"},
+ c4_9:{"scene":"dawn",
+ "who":"",
+ "text":"你在黎明前的黑暗中站起来，浑身发抖。\n\n无论你愿不愿意承认，有些东西已经无法再被当作幻觉了。护身符、声音、梦、短信、火焰中的女人——它们像拼图一样，一块块拼出一个你不敢直视的图案。\n\n而图案的中心，是 Damon。是 Stefan。是那个叫 Katherine 的女人。也许，还有你自己。\n\n你走回家，在日记本上写下第一行字：「从今天起，我要自己找出真相。」\n\n笔尖在纸上留下深深的印记。这是你第一次，为自己做出一个不依赖任何人的决定。",
+ "next":"c4_9__2"},
+ c4_9__2:{"scene":"dawn",
+ "text":"黎明前的天空呈现出一种奇异的蓝——不是白天的蓝，也不是夜晚的黑，而是介于两者之间的、像金属的冷光。你站在自家门口，浑身沾着泥和落叶，手里攥着那枚已经安静下来的护身符。\n\n你打开日记本，台灯的光圈照亮纸面。你的字迹因为手抖而有些歪斜，但你一笔一画地写着。\"我知道我再也回不去了，\"你写道，\"但我不后悔。哪怕前面是悬崖，我也要自己看清楚。\"你合上本子时，天刚好亮了。新的一天，和所有新的一天一样，带着阳光和鸟鸣。只是透过窗户看这一切的你，已经不一样了。",
+ "next":"c4_9__3"},
+ c4_9__3:{"scene":"dawn",
+ "text":"黎明前的天空呈现出奇异的金属蓝。你站在自家门口，浑身沾着泥和落叶。你打开日记本，台灯的光圈照亮纸面，你的字迹因为手抖而歪斜，但你一笔一画地写着。\"我知道我再也回不去了，但我不后悔。\"你写下这句话时，手突然稳了。你合上本子，天刚好亮了。透过窗户照进来的阳光和鸟鸣，和昨天一模一样。只是你知道，从今天起，你再也不会用昨天的眼光看它们了。",
+ "next":"c4_9__4"},
+ c4_9__4:{"scene":"dawn",
+ "text":"你在日记里，第一次为自己写下了决心。",
+ "next":"c5_0"},
+ c5_0:{"scene":"school",
+ "enter":{"chapter":5,
+ "night":false},
+ "who":"",
+ "portrait":null,
+ "text":"第五章 · 真相的代价\n\n真相不是一道光，而是一面镜子。它照出的东西，往往比黑暗更让你难以承受。\n\n接下来的两天，你像一台精密的仪器一样搜集信息。你翻遍了图书馆的地方史区域，找到了一本 1864 年的镇志。你查到了 Salvatore 家族——一个曾经显赫、在一场大火后突然消失的家族。\n\n你还查到了一个名字：Katherine Pierce。镇志里对她的记载只有一行，被墨水涂改过，隐约能辨认出「失踪」「1864」「被诅咒」几个词。",
+ "next":"c5_0__2"},
+ c5_0__2:{"scene":"school",
+ "text":"镇志被锁在图书馆最深处的玻璃柜里，管理员是个戴老花镜的老太太，她盯着你看了很久，才不情不愿地打开柜子。\"这些书很少有人看，\"她说，\"上一个借走地方史的，还是十年前那个 Zach 家的孩子。\"你没告诉她，你在找的东西和 Zach 没有半点关系。\n\n你把那本 1864 年的镇志摊在桌上，一页页翻过去。纸页脆弱得像枯叶，墨水大多已经褪色。可就在那些关于火灾、失踪、家族迁徙的记载里，你开始拼出一个被刻意掩盖的轮廓——那场烧掉半个镇子的大火，官方说法是\"意外\"，可你在字里行间读到的是别的东西：恐惧、逃亡、以及某种被反复提及又被反复涂改的\"诅咒\"。",
+ "next":"c5_0__3"},
+ c5_0__3:{"scene":"school",
+ "text":"镇志里那些被涂改的痕迹让你着迷。有时一个名字被墨水涂掉，你能从残留的笔画里辨认出轮廓；有时一整段话被划去，只在纸背面留下凸起的压痕。你忽然意识到，历史从来不是写在纸上的那些字，而是那些被刻意抹去的部分。你正在做的，就是把这些被抹去的东西，一点一点重新读出来。",
+ "next":"c5_0__4"},
+ c5_0__4:{"scene":"school",
+ "text":"历史从不写在表面，而藏在被涂抹的空白处。",
+ "next":"c5_1"},
+ c5_1:{"scene":"school",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"neutral",
+ "text":"Bonnie 把一张泛黄的剪报推到你面前。「我外婆藏着的。1864 年，小镇上死了很多人，官方说法是火灾。但你看这个——」\n\n剪报上是一张模糊的集体照，一群镇民站在一座烧毁的教堂前。你的目光落在照片边缘：两个年轻的男人并肩站着，一个金发，一个棕发，穿着那个时代的衣服。\n\n他们的脸——尽管模糊——你一眼就认出来了。\n\n「这是……Stefan 和 Damon？」你的声音发颤。\n\nBonnie 点头。「那是一百四十年前。Elena，他们看起来和现在一模一样。」",
+ "next":"c5_1__2"},
+ c5_1__2:{"scene":"school",
+ "text":"Bonnie 把剪报推过来时，手指在微微发抖。那张泛黄的纸片上，一百四十年前的集体照模糊得几乎看不清脸，可你一眼就认出了那两个年轻人——那种认出不是靠五官，而是靠某种更深的东西，像在陌生的老照片里认出自己的亲人。\n\n\"他们的眼睛，\"Bonnie 轻声说，\"没有变。\"你凑近看，果然，尽管照片模糊，那两个人的眼神却清晰得诡异——一种你在这两个人身上都见过的、带着古老疲惫的沉静。你忽然感到一阵晕眩：一百四十年的时间，在他们身上究竟留下了什么，又带走了什么？",
+ "next":"c5_1__3"},
+ c5_1__3:{"scene":"school",
+ "text":"那张剪报你看了不下二十遍。照片里的两个年轻人，一个笑得灿烂，一个神情淡淡——你几乎能从中看出他们性格的雏形：一个对世界还抱有期待，一个已经学会了保持距离。一百四十年过去，这份差异被放大成了他们之间所有的矛盾与牵绊。你忽然想，Katherine 当年究竟更爱哪一个？还是说，她爱的只是被他们爱着的感觉？",
+ "next":"c5_1__4"},
+ c5_1__4:{"scene":"school",
+ "text":"一百四十年的距离，没能改变他们眼里的东西。",
+ "choices":[{"label":"带着剪报去找 Stefan 对质",
+ "fx":{"stefan":1,
+ "self":2,
+ "flag":"confrontStefan"},
+ "next":"c5_2a"},{"label":"先去找 Damon，他已经答应说实话",
+ "fx":{"damon":2,
+ "self":1,
+ "flag":"confrontDamon"},
+ "next":"c5_2b"},{"label":"谁也不找，自己去查 Katherine",
+ "fx":{"self":2,
+ "flag":"soloSearch"},
+ "next":"c5_2c"}]},
+ c5_2a:{"scene":"night",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"sad",
+ "text":"你把剪报摊在他面前。\n\n他看了很久，然后闭上眼，像是终于等到这一刻。「我一直在想该怎么告诉你，」他声音沙哑，「但又怕你一旦知道，就再也看我的眼神不同了。」\n\n「你是不死的。」你说。这不是疑问。\n\n「我们是不死的。」他纠正你，「Damon 和我。一百四十年前，Katherine 把我们变成了……变成了现在这样。她杀了我们，又让我们重生。从那以后，我们一直是这个样子。」\n\n他睁开眼，那双通常清澈的眼睛里，此刻翻涌着一百年的疲惫。「现在你知道了。你还愿意看着我吗？」",
+ "next":"c5_2a__2"},
+ c5_2a__2:{"scene":"night",
+ "text":"你说\"这是你，对吗\"的时候，声音很轻，轻得几乎被窗外的风声盖过。Stefan 看着那张剪报，看了很久很久，久到你以为他不会回答了。然后他闭上眼，肩膀微微塌了下来——那是一个扛着重担的人，终于决定把担子放下的姿态。\n\n\"我一直想找个合适的时机，\"他说，\"可合适的时机永远不来。\"他睁开眼，那双一百四十岁的眼睛里，有你从未见过的脆弱。你忽然明白，他不是不信任你，他是害怕——害怕你知道真相后，会像所有人一样，用那种眼神看他。",
+ "next":"c5_2a__3"},
+ c5_2a__3:{"scene":"night",
+ "text":"Stefan 承认真相的那一刻，你没有后退，也没有尖叫。你只是站在那里，感到一种奇怪的平静。也许是因为你早就知道了——从那两道影子、那双不湿的肩膀开始，你的心早就接受了答案，只是你的大脑拒绝承认。现在他说出口，等于替你确认了一件你早已知道的事。奇怪的是，确认之后，你反而轻松了。",
+ "next":"c5_2a__4"},
+ c5_2a__4:{"scene":"night",
+ "text":"真相的影响力，远不如你是否愿意接受它。",
+ "next":"c5_3"},
+ c5_2b:{"scene":"dusk",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"neutral",
+ "text":"你把剪报拍在他面前。\n\n他看了一眼，笑了——但那笑容里没有意外。「你终于查到了。」\n\n「这是你，对吗？和 Stefan。你们没有老。」\n\n「没有。」他给自己倒了杯酒，手稳得不像有百年历史的人，「1864 年，一个叫 Katherine 的女人来到这里。她爱上了我哥哥，也爱上了我。她把我们两个都变成了吸血鬼——然后在一场大火中『死去』，留下我们兄弟俩互相埋怨了一百多年。」\n\n他放下酒杯，看着你。「现在你知道了。怕吗？」\n\n你想说怕。但你看着他的眼睛，发现你怕的不是他，而是自己心里那个居然觉得这一切说得通的部分。",
+ "next":"c5_2b__2"},
+ c5_2b__2:{"scene":"dusk",
+ "text":"你把剪报拍在桌上时，Damon 甚至没有眨眼。他早就知道你会查到。这种笃定让你有些恼火——仿佛你所有的探索、所有的震惊，都在他的预料之中，只是他懒得提前告诉你。\n\n\"你早知道我会找到，\"你说，\"你只是等着我自己来问。\"\n\n\"我给你时间，\"他给自己倒酒，动作优雅而缓慢，\"你拿着那枚护身符，迟早会走到这一步。我只是没催你。\"他放下酒杯，看着你，\"现在你问了，我就答。但你要想清楚——有些门，一旦推开就关不上了。\"你看着他，忽然意识到，他这是在给你最后一次反悔的机会。",
+ "next":"c5_2b__3"},
+ c5_2b__3:{"scene":"dusk",
+ "text":"Damon 说\"现在你知道了，怕吗\"时，你认真想了想。答案是不怕——至少不是他以为的那种怕。你怕的不是他是什么，而是他自己似乎并不为此痛苦。活了一百四十年，他把所有的痛苦都酿成了一种玩世不恭的笑。你忽然很想问他：你累吗？可这句话太私密了，你说不出口，只能把它和很多别的问题一起，继续藏在心里。",
+ "next":"c5_2b__4"},
+ c5_2b__4:{"scene":"dusk",
+ "text":"他把选择权交给你，这本身就是一种尊重。",
+ "next":"c5_3"},
+ c5_2c:{"scene":"school",
+ "who":"",
+ "text":"你谁也没找。\n\n你花了整整一个下午，在镇志的故纸堆里寻找 Katherine 的痕迹。你找到了一份旧的财产记录：Katherine Pierce 曾在镇子边缘拥有一座庄园，那座庄园在一场大火中被烧毁。\n\n地址你很熟悉——那是篝火派对附近的树林深处。是你在满月下看到空地的地方。\n\n你还发现了一个令人不寒而栗的细节：Katherine 失踪的日期，恰好是你父母车祸的那一年——往前推，正好是二十年。\n\n你把这一点记在心里，没有告诉任何人。",
+ "next":"c5_2c__2"},
+ c5_2c__2:{"scene":"school",
+ "text":"你谁也没找，是因为你害怕看到他们的反应。你害怕确认——害怕从他们眼里读出\"是的，我们是不死的\"，也害怕读出\"不，你在胡说\"。这两种可能都不堪承受。\n\n于是你独自泡在图书馆，把 Katherine Pierce 这个名字在故纸堆里一遍遍翻找。财产记录、法庭档案、教区名册——她的痕迹像一条若隐若现的线，穿过一百四十年的历史。当你发现她失踪的年份和你父母车祸的年份之间存在某种刺眼的呼应时，你的手停住了。你盯着那个数字，感到一种冰冷的、正在慢慢成型的恐惧。",
+ "next":"c5_2c__3"},
+ c5_2c__3:{"scene":"school",
+ "text":"你查到 Katherine 失踪的年份和父母车祸的年份遥相呼应时，手停在半空。这个数字像一把钥匙，正在打开一扇你不想打开的门。你想起父母车祸的官方报告——\"雨天路滑，意外坠桥\"。那座桥就是 Wickery Bridge，就是篝火派对附近的那座桥，就是那个刻着眼睛符号的空地旁边。所有的线索都在向同一个地点收拢，你再也骗不了自己说这是巧合。",
+ "next":"c5_2c__4"},
+ c5_2c__4:{"scene":"school",
+ "text":"所有线索都指向同一座桥，你再也无处可逃。",
+ "next":"c5_3"},
+ c5_3:{"scene":"night",
+ "who":"",
+ "text":"真相像一副骨架，开始在你脑中拼接成型。\n\nKatherine 是吸血鬼——或者说，是最早的一批。她创造了 Damon 和 Stefan。她在一百四十年前「死去」，但很多镇上的传说暗示她并没有真正消失。\n\n而你，Elena Gilbert——长着一张和 Katherine 惊人相似的脸。\n\n你在镜子里看过自己无数次。现在，你第一次用不同的眼光看那张脸：同样的红棕色头发，同样的眉眼轮廓。Caroline 曾说 Damon 看你时像在看别人——现在你明白了，他看的不是你，是一个幽灵。\n\n一个念头让你几乎窒息：他们爱的，到底是你，还是一百四十年前那个女人？",
+ "next":"c5_3__2"},
+ c5_3__2:{"scene":"night",
+ "text":"镜子里的你和照片里的 Katherine 并排放在一起——你第一次认真地做了这个对比。同样的红棕色卷发，同样的眉眼，同样微微上扬的嘴角。差别只在于神态：照片里的她带着一种你从未有过的、从容到近乎危险的笑意。\n\n你和她是两张相似的面孔，却怀着完全不同的心。这个认知让你稍稍安心，又立刻陷入新的不安——如果他们最初是因为这张脸看你，那么现在呢？他们看的是你，还是隔着你在看一个百年前的幽灵？这个问题像一根细刺，扎在你心里，不剧烈，却持续地疼。",
+ "next":"c5_3__3"},
+ c5_3__3:{"scene":"night",
+ "text":"你盯着镜子里那张和 Katherine 相似的脸，忽然做了一个实验。你试着模仿她的表情——微微扬起嘴角，眼神里带一点从容的疏离。镜子里的你瞬间变了个人，变得陌生、危险而迷人。你吓了一跳，赶紧收回表情。可在那一瞬间你明白了：你和她的差别，不在脸，而在选择——她选择了那张面具，而你，可以选择不戴。",
+ "next":"c5_3__4"},
+ c5_3__4:{"scene":"night",
+ "text":"你和她的差别不在脸，而在你选择成为谁。",
+ "choices":[{"label":"当面问 Damon：你爱的是谁？",
+ "fx":{"damon":1,
+ "self":2,
+ "flag":"askDamonLove"},
+ "next":"c5_4a"},{"label":"向 Stefan 寻求确认与安慰",
+ "fx":{"stefan":2,
+ "self":1,
+ "flag":"seekStefan"},
+ "next":"c5_4b"},{"label":"避开两人，独自消化",
+ "fx":{"self":-1,
+ "flag":"avoid"},
+ "next":"c5_4c"}]},
+ c5_4a:{"scene":"night",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"intense",
+ "text":"「你爱我，还是爱 Katherine？」\n\nDamon 的表情凝固了。那是一种被精准刺中的表情。\n\n「不一样，」他终于说，声音低沉，「Katherine 是……过去。是还没解开的一个结。而你——」他向你走近一步，「你是现在。你走路的样子，你皱眉的样子，你明明害怕却还是直视我的样子，那都是你。我分得清。」\n\n他停顿了一下。「至于我一开始为什么看你——是的，你长得像她。但那是 doors 打开的方式。真正让我留下来的，是门后面的东西。」\n\n你不知道该相信多少。但这一刻，他的眼神真实得让你无法否认。",
+ "next":"c5_4a__2"},
+ c5_4a__2:{"scene":"night",
+ "text":"你说出\"你爱的是谁\"时，心跳到了嗓子眼。这是你最想问、又最怕问的问题。Damon 的表情凝固了那么一瞬——短得几乎看不出，但你抓住了。那一瞬里，你看见了他面具裂缝下面的东西。\n\n他的回答没有让你完全安心，却让你感到一种奇异的满足：至少他认真回答了，没有用玩笑搪塞。在他那样的相处方式里，认真本身就是一种表白。你看着他指尖轻触你手背的动作，忽然想，也许真相并不总是让人好受，但含糊其辞更让人煎熬。",
+ "next":"c5_4a__3"},
+ c5_4a__3:{"scene":"night",
+ "text":"Damon 说\"我分得清\"的时候，你迫切地想相信他。不是因为你需要被爱，而是因为你需要确认：在这座被幻象和伪装笼罩的小镇上，至少有一个人看见的是真正的你。他的回答给了你这份确认—— 不完美，但真实。你忽然想，也许爱一个人从来不是\"只看他\"或\"只看另一个人\"，而是在看清所有的相似之后，依然选择眼前这个独特的存在。",
+ "next":"c5_4a__4"},
+ c5_4a__4:{"scene":"night",
+ "text":"被看见，比被爱更让你感到满足。",
+ "next":"c5_5"},
+ c5_4b:{"scene":"night",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"neutral",
+ "text":"「你 looked at me 的时候，」你艰难地开口，「是因为我像她吗？」\n\nStefan 沉默的时间比你想的长。「一开始，」他诚实地说，「我承认，我看见你的时候吓了一跳。但那不是爱一个人的理由——那只是一个巧合。」\n\n「那什么才是？」\n\n「是你选择相信我，即使我有那么多秘密。」他看着你，目光温柔而坚定，「Elena，我和 Damon 爱过同一个女人，那是过去的事。但我现在看着你，看见的是这个会因为一句谎话而失眠、会为了真相.login 走进黑夜的你。这是你，不是她。」\n\n你终于哭了出来。",
+ "next":"c5_4b__2"},
+ c5_4b__2:{"scene":"night",
+ "text":"\"是因为我像她吗\"——这个问题问出口时，你的声音带着一丝你自己都没察觉的颤抖。Stefan 没有立刻回答，这份迟疑让你的心沉了下去。可当他说\"一开始\"时，你反而松了口气——至少，他诚实。\n\n他后面说的话，像一双温暖的手，把你从那个危险的念头上拉了回来。他说的是\"你\"，是\"这个会因为一句谎话而失眠的你\"。你哭出来的时候，忽然意识到：你需要的不只是被爱，而是被看见——作为一个独立的、与众不同的\"你\"被看见。而这一刻，他做到了。",
+ "next":"c5_4b__3"},
+ c5_4b__3:{"scene":"night",
+ "text":"你在 Stefan 肩头哭出来的时候，感到一种释放。这些天你一直紧绷着——面对 Damon 的吸引，面对 Bonnie 的期待，面对那些越来越清晰的线索。你一直表现得比自己实际感受的要坚强。而现在，在这个可以把一切交出去的时刻，你终于允许自己软弱。Stefan 没有说话，只是轻轻拍着你的背。这份沉默的接纳，比任何话语都让你觉得被爱。",
+ "next":"c5_4b__4"},
+ c5_4b__4:{"scene":"night",
+ "text":"你终于允许自己，在某个肩头软弱一次。",
+ "next":"c5_5"},
+ c5_4c:{"scene":"night",
+ "who":"",
+ "text":"你谁也不见。\n\n你把自己锁在房间里，把脸埋进枕头。那个问题——他们爱的是谁——像一根刺，扎在你心里最柔软的地方。\n\n你知道答案可能是：两者都有。他们看着你时，既看见了你，也看见了另一个人。这让你感到一种前所未有的、复杂的屈辱——你既渴望被看见，又害怕被错认。\n\n护身符在桌上静静躺着。那只眼睛闭着，像在尊重你的沉默。",
+ "next":"c5_4c__2"},
+ c5_4c__2:{"scene":"night",
+ "text":"你把自己锁在房间里，是因为你不知道该用什么样的表情面对他们。愤怒？伤心？还是若无其事？每一种情绪都显得不够贴切。你把脸埋进枕头，任由那种复杂的屈辱感淹没你。\n\n被错认是一种奇怪的伤害。它不是被拒绝，而是被替代——你明明站在那里，对方却透过你看着别人。你想起 Caroline 说过\"Damon 看你时像在看别人\"，那时你还觉得她危言耸听。现在你才知道，最伤人的往往不是恶意，而是那些不经意的、把你当作影子的瞬间。",
+ "next":"c5_4c__3"},
+ c5_4c__3:{"scene":"night",
+ "text":"你锁在房间里的那个夜晚，想了很多关于\"自我\"的问题。如果他们爱的是一张相似的面孔，那\"你\"在哪里？如果连你自己都常常觉得陌生，那别人又如何能看清你？这些问题的答案像水里的月亮，你越想去抓，它晃得越厉害。最后你放弃了思考，任由自己沉进睡眠。也许有些关于自我的问题，不需要想明白——你只需要一天天地活成自己，答案自然会浮现。",
+ "next":"c5_4c__4"},
+ c5_4c__4:{"scene":"night",
+ "text":"被错认的痛，只有真正经历过的人才懂。",
+ "next":"c5_5"},
+ c5_5:{"scene":"ritual",
+ "who":"",
+ "text":"第三天夜里，护身符把你叫醒了。\n\n它不再只是发烫——它在震动，在桌上画出一圈细微的声响，像在敲一扇门。你跟着它的指引，再一次来到树林深处的空地。\n\n这一次，空地上站着一个人。\n\n红发，白裙，背对着你，站在那块刻着眼睛的石碑前。她转过身——\n\n那张脸和你一模一样。",
+ "next":"c5_5__2"},
+ c5_5__2:{"scene":"ritual",
+ "text":"护身符在夜里发出的震动，像某种固执的呼唤。你跟着它来到空地时，心里异常平静——仿佛这一天、这一刻，是你早就知道会到来的。月光把一切都照得清清楚楚，你没有丝毫犹豫。\n\n当你看到那个红发女人转过身、露出和你一模一样的脸时，你没有尖叫。你只是站在那里，感到一种时间错位的恍惚——仿佛你正站在一面会说话的镜子前，而镜子里的你，活过比你多得多的人生。她看着你，那双和你一样的眼睛里，盛着你从未体验过的、漫长岁月沉淀下来的东西。",
+ "next":"c5_5__3"},
+ c5_5__3:{"scene":"ritual",
+ "text":"你第一次在空地上见到 Katherine 时，脚像被钉在了原地。她和你一模一样的脸在月光下泛着冷光，那种似曾相识的感觉几乎让你窒息。你说不清那一瞬间是恐惧还是亲切——也许两者都有。当你终于能动的时候，你没有后退，而是站在原地，看着她。你告诉自己：无论她是谁，无论她和你有什么关系，你都有权利知道真相。",
+ "next":"c5_5__4"},
+ c5_5__4:{"scene":"ritual",
+ "text":"两个相同的脸，即将面对同一个古老的仪式。",
+ "choicesTitle":"你面向那个和自己一模一样的人——",
+ "choices":[{"label":"开口叫她：Katherine？",
+ "fx":{"self":1,
+ "flag":"speakKatherine"},
+ "next":"c5_6a"},{"label":"后退一步，警惕地观察",
+ "fx":{"self":2,
+ "damon":1},
+ "next":"c5_6b"},{"label":"伸出手，触碰到她的脸",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flag":"touchKatherine"},
+ "next":"c5_6c"}]},
+ c5_6a:{"scene":"ritual",
+ "who":"Katherine",
+ "portrait":"katherine",
+ "expr":"smile",
+ "text":"「Katherine？」她笑了，笑声像银铃，也像碎冰。「很久没人这样叫我了。」\n\n她朝你走来，步伐优雅得像在跳舞。「你长得比我记忆中还像。难怪他们会认错——」\n\n「他们没有认错。」你打断她，声音比自己想象的坚定。\n\n她停住，笑容里第一次出现裂缝。「哦？那你比我想的聪明。」她绕着你慢慢走了一圈，像在打量一件藏品，「告诉我，亲爱的，你知道他们为你做了什么吗？」\n\n你攥紧了拳头。「我会查清楚。」\n\n她笑了起来。「你会的。这就是有趣的地方。」",
+ "next":"c5_6a__2"},
+ c5_6a__2:{"scene":"ritual",
+ "text":"你叫出\"Katherine\"这个名字时，她的笑容像波纹一样荡开，带着一种说不清是欣慰还是嘲讽的意味。她走近你，步伐优雅得不像这个时代的人——那是一种属于另一个世纪的仪态，缓慢、从容、带着对人的审视。\n\n她说\"他们没有认错\"时的停顿，让你心里一紧。你在那句话里听到了一种极轻的、几乎不可闻的颤抖——是嫉妒？还是某种更深的、连她自己都不愿承认的东西？你想，也许她和你一样，也被这个问题折磨了很久，只是她用一百四十年的时间，把它伪装成了从容。",
+ "next":"c5_6a__3"},
+ c5_6a__3:{"scene":"ritual",
+ "text":"Katherine 走近你时，你闻到了那股紫罗兰的香气——和后来的每一次一样。这股香气成了她的标记，成了你辨认她的另一种方式。她笑起来的时候，你会恍惚觉得那是对着镜子里的自己笑。可她的眼神出卖了她——那里面藏着一百四十年的算计和疲惫，是一个年轻女孩绝不会有的东西。你提醒自己：这张和你一样的脸背后，是一个完全不同的人。",
+ "next":"c5_6a__4"},
+ c5_6a__4:{"scene":"ritual",
+ "text":"她的从容下面，藏着一百四十年的疲惫。",
+ "next":"c5_7"},
+ c5_6b:{"scene":"ritual",
+ "who":"Katherine",
+ "portrait":"katherine",
+ "expr":"neutral",
+ "text":"你后退一步。她没有追，只是站在原地，把手搭在石碑上。\n\n「聪明，」她说，「像我。我当年也总是先退一步。」\n\n「你想干什么？」\n\n「干什么？」她轻轻笑了，「我想回家。一百四十年了，我一直在找一个能让我真正回来的方法。这枚护身符是钥匙，而你——」她看着你，眼神里有一种你读不懂的复杂，「你是锁。」\n\n「我不会帮你。」\n\n「哦，你会的，」她轻声说，「因为你已经在路上了。每一步都是你自己走的，亲爱的。记住这一点。」",
+ "next":"c5_6b__2"},
+ c5_6b__2:{"scene":"ritual",
+ "text":"你后退的那一步，让你和她之间拉开了一段礼貌而疏离的距离。她没有追，只是站在原地，把手搭在石碑上——那个姿势如此自然，仿佛她才是这里的主人，而你才是客人。\n\n她说\"你是锁\"的时候，你的心脏猛地收缩。钥匙、锁、门——这些意象在今晚反复出现，像某种密码的碎片。你忽然想，也许这一切的根本，不是她要走、你要留，而是你们两个都被困在同一个结构里：她是想出去的那一个，而你是她唯一的出口。这个念头让你不寒而栗。",
+ "next":"c5_6b__3"},
+ c5_6b__3:{"scene":"ritual",
+ "text":"她说\"你是锁\"的时候，你忽然想起护身符上那只闭着的眼睛。锁、钥匙、眼睛、门——这些意象在你脑海里连成一条线。你隐约猜到 Katherine 想要什么：她想通过你，打开某扇门，回到某个她回不去的地方。而她所谓的\"等了你很久\"，也许不是出于亲情或善意，而是因为你正好是那把唯一的钥匙。这个猜测让你心凉，却也让你清醒。",
+ "next":"c5_6b__4"},
+ c5_6b__4:{"scene":"ritual",
+ "text":"你隐约看懂了她没说出口的真正目的。",
+ "next":"c5_7"},
+ c5_6c:{"scene":"ritual",
+ "who":"",
+ "text":"你伸出手，指尖碰到她的脸颊。\n\n触感冰凉，像碰到了一块大理石——又像碰到了另一个自己。她没有躲，只是静静看着你，眼里泛起一种近乎温柔的神情。\n\n「你终于来了，」她轻声说，用的是梦里那句话，「我等了你很久。」\n\n画面像水波一样荡开。她的脸变年轻、又变苍老，无数张面孔在她身上快速闪过——Katherine、Elena、一个你不认识的女人、一个孩子。\n\n「我们是一样的，」她说，「又不完全一样。这就是为什么这件事必须由你来完成。」\n\n然后她消失了，只留下空气中残留的、紫罗兰般的香气。",
+ "next":"c5_6c__2"},
+ c5_6c__2:{"scene":"ritual",
+ "text":"你触碰她脸颊的那一刻，时间仿佛停住了。她的皮肤冰凉，像月光凝成的实体——那是死亡的温度，也是某种超越生命的东西的温度。你感受到她身上一股微弱的气息，紫罗兰般的香气，和数字\"一百四十\"一样，成了这个夜晚的一个标记。\n\n当无数张面孔在她身上闪过时，你看到了时间的形状——它不是一条直线，而是一层叠一层的沉积，每一层都是一张脸、一个名字、一段被活过的岁月。她说\"我们是一样的，又不完全一样\"时，你忽然懂了：你们是同一条河里不同时刻的水，源头相同，流向却可能截然不同。",
+ "next":"c5_6c__3"},
+ c5_6c__3:{"scene":"ritual",
+ "text":"你的指尖触到她脸颊的一瞬，时间仿佛凝固。那张和你一样的脸在你眼前层层剥落——少女、妇人、老妪、又变回少女——像一卷快速倒带的胶片。你看见了一百四十年如何在一张脸上流转，看见了一个人如何在时间的冲刷下，变成了另一个人。她说\"我们是一样的，又不完全一样\"，而你此刻终于懂了这句话的重量：你们共享一张脸，却走在两条完全不同的路上。",
+ "next":"c5_6c__4"},
+ c5_6c__4:{"scene":"ritual",
+ "text":"时间在一张脸上流转，你看见了它的形状。",
+ "next":"c5_7"},
+ c5_7:{"scene":"night",
+ "who":"",
+ "text":"你回到家中时，天已经快亮了。\n\n镜子里的你看起来疲惫而陌生。但某种东西已经改变了——不再是从前的你，却也不是 Katherine。你站在两者之间的门槛上。\n\n手机上有两条未读消息。一条来自 Damon：「需要帮忙就说。」一条来自 Stefan：「你还好吗？我一直担心你。」\n\n两条消息，两种关心。你忽然意识到，接下来的选择不再只是关于爱——而是关于你要成为什么样的人，以及你愿意为此付出什么代价。\n\n真相的代价，是你再也无法回到无知者无忧无虑的样子。",
+ "next":"c5_7__2"},
+ c5_7__2:{"scene":"night",
+ "text":"修改后的日记本上，你写下了那个名字——Katherine——和你自己的名字，中间画了一个问号。你盯着那个问号看了很久，然后又在旁边写下\"门\"、\"钥匙\"、\"锁\"三个词，用线连起来。纸上的图案像某种幼稚的示意图，却让你感到一种理清头绪的踏实。\n\n手机屏幕上那两条消息并排躺着，像两条通往不同方向的路。你忽然意识到，你今晚的每一个选择都在做同一件事：决定你和这个世界的关系——是靠近某个人，还是保持独立；是接受既定的剧本，还是自己写。你放下手机，决定明天再回复。今晚，你已经做了足够多的决定。",
+ "next":"c5_7__3"},
+ c5_7__3:{"scene":"night",
+ "text":"你在日记本上画的那张图——Katherine、你、门、钥匙、锁——像一张稚拙的地图。你盯着它，忽然想起外婆说过的话：\"画下来，混乱就变清楚了。\"确实，当你把这些关系画在纸上，那些缠绕在你心里的乱麻，似乎真的理清了一些。你合上本子前，在最后加了一句：\"她想要自由，代价是我的自由。这就是她没说出口的部分。\"",
+ "next":"c5_7__4"},
+ c5_7__4:{"scene":"night",
+ "text":"把混乱画下来，它就有了被解决的可能。",
+ "next":"c6_0"},
+ c6_0:{"scene":"ritual",
+ "enter":{"chapter":6,
+ "night":true,
+ "moon":2},
+ "who":"",
+ "portrait":null,
+ "text":"第六章 · 血月之下\n\n满月变成了血月。\n\n这是Bonnie 从外婆的笔记里解读出来的：当护身符的眼睛完全睁开，而月相停在满月，小镇就站在一个「门槛」上。门槛的那一边，是 Katherine 一百四十年来一直在等待的仪式。\n\n「她需要一个和她相像的人，」Bonnie 说，声音发抖，「需要那个人自愿打开那扇门。Elena，她一直在等你——从你出生起，也许更早。」",
+ "next":"c6_0__2"},
+ c6_0__2:{"scene":"ritual",
+ "text":"Bonnie 解读外婆笔记的那个下午，天空一直阴沉沉的。她念出\"门槛\"这个词时，特意停下来看你，仿佛在确认你有没有听懂。你听懂了——门槛意味着一个边界，跨过去就再也回不来。\n\n\" Katherine 等了一百四十年，\"Bonnie 合上笔记，\"她不会轻易放弃。今晚是满月，是门槛最薄的时候。\"她看着窗外，\"如果你不打算面对她，现在还来得及——把护身符给我，我把它藏到一个她找不到的地方。\"你摇头。你知道，藏是藏不住的。有些东西一旦醒了，就再也睡不回去。",
+ "next":"c6_0__3"},
+ c6_0__3:{"scene":"ritual",
+ "text":"Bonnie 说\"门槛最薄的时候\"时，你抬头看了一眼窗户外的月亮。它那么圆、那么亮，像个无辜的旁观者。你很难想象，就是这样一轮美丽的月亮，今晚会成为某种仪式的触发器。你忽然觉得，这世上最危险的东西往往不是狰狞的怪物，而是那些看起来平静美好的事物——月亮、镜子、一句温柔的话、一个熟悉的笑脸。",
+ "next":"c6_0__4"},
+ c6_0__4:{"scene":"ritual",
+ "text":"月亮无辜地挂着，成了这场仪式的见证者。",
+ "next":"c6_1"},
+ c6_1:{"scene":"ritual",
+ "who":"Bonnie",
+ "portrait":"bonnie",
+ "expr":"intense",
+ "text":"「有两个办法，」Bonnie 摊开外婆的笔记，「第一，你拒绝她。把护身符毁掉，切断联系。但笔记上说，钥匙一旦认主，强行毁掉会反噬——反噬的不只是你，还有整个镇子。」\n\n「第二个办法呢？」\n\n她犹豫了很久。「第二个办法是——你主动完成仪式。但这一次，由你来控制。你成为新的守门人，把 Katherine 和那扇门一起封住。」\n\n「代价呢？」你问。你已经学会，任何选择都有代价。\n\nBonnie 闭上眼。「代价是，你会变成门槛的一部分。不完全活着，也不完全死去。你能看见两个世界，却再也不完全属于任何一个。」",
+ "next":"c6_1__2"},
+ c6_1__2:{"scene":"ritual",
+ "text":"Bonnie 说出两个办法时，房间里的空气仿佛凝固了。第一条——毁掉护身符，切断联系——听起来最直接，可\"反噬\"两个字让它的代价变得不可用。第二条——成为守门人——则像一场温柔的囚禁，用\"守护\"的名义，把你永远锁在生与死之间。\n\n你问\"代价呢\"的时候，其实已经知道答案。这世上从来没有免费的守护。Bonnie 闭上眼，说出的那句话让你心里一片冰凉：\"不完全活着，也不完全死去。\"你忽然想，这描述的不是守门人，是她——是 Katherine——是 Damon 和 Stefan。这座小镇上，有太多人活在这种\"不完全\"里。",
+ "next":"c6_1__3"},
+ c6_1__3:{"scene":"ritual",
+ "text":"两个选择摆在你面前，像两条都通向悬崖的路。毁掉护身符可能反噬全镇，成为守门人要付出永远的代价。你问\"代价呢\"的时候，其实已经预感到了答案。你忽然想，为什么 Katherine 要给两个这么糟糕的选择？也许这本身就是她的设计——让你在两个坏结果里挑一个，然后无论你选什么，都是她想要的结果。而破解的方法，或许是拒绝接受这道选择题。",
+ "next":"c6_1__4"},
+ c6_1__4:{"scene":"ritual",
+ "text":"当两个选择都很糟，也许该怀疑题目本身。",
+ "choices":[{"label":"选第一条：拒绝她，毁掉护身符",
+ "fx":{"self":2,
+ "stefan":1,
+ "flag":"reject"},
+ "next":"c6_2a"},{"label":"选第二条：完成仪式，成为守门人",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flag":"guardian"},
+ "next":"c6_2b"},{"label":"先不决定，去找兄弟俩商量",
+ "fx":{"self":-1,
+ "flag":"consult"},
+ "next":"c6_2c"}]},
+ c6_2a:{"scene":"night",
+ "who":"",
+ "text":"你决定毁掉护身符。\n\n你把它带到镇上的老桥——Wickery Bridge，那座承载了小镇无数秘密的桥。你举起石头，准备砸下去。\n\n「等等！」Stefan 从后面冲过来，「你不能——」\n\n「为什么不能？」\n\n「因为 Katherine 需要的不是这枚护身符，」他喘着气，「是你。护身符只是媒介。你毁掉它，只会激怒门后面的东西，却关不上那扇门。」\n\n你举着石头，停在半空。桥下的河水在血月下泛着暗红色的光。你忽然意识到，你差点犯了一个无法挽回的错误。",
+ "next":"c6_2a__2"},
+ c6_2a__2:{"scene":"night",
+ "text":"你举起石头准备砸下去的时候，心里想的是：结束了。只要这块铜片碎掉，今晚的一切、这段日子的一切，都会随之结束。你甚至感到一丝近乎愉快的决绝。\n\n可 Stefan 冲过来喊\"等等\"的那一刻，你意识到自己差点犯下大错。他说 Katherine 要的不是护身符而是你——这句话像一盆冷水，把你从那种虚假的决绝中浇醒。你举着石头停在半空，忽然很庆幸他来了。有些决定，你必须确认自己不是在逃避，才敢去做。而刚才那一下，你承认，里面有太多想逃的成分。",
+ "next":"c6_2a__3"},
+ c6_2a__3:{"scene":"night",
+ "text":"你举起石头的那一刻，心里想着\"结束了\"。可 Stefan 冲过来喊\"等等\"时，你忽然意识到：你想要的可能不是结束，而是逃跑。这两者完全不同——结束需要面对，逃跑只需要转身。你手上那块石头，与其说是解决问题的工具，不如说是你逃避的借口。庆幸的是，Stefan 看穿了你。他在最关键的时刻拦住了你，让你有机会重新选择——这一次，是真正的面对。",
+ "next":"c6_2a__4"},
+ c6_2a__4:{"scene":"night",
+ "text":"你差点把逃跑误当成结束，幸好有人拦住了你。",
+ "next":"c6_3"},
+ c6_2b:{"scene":"ritual",
+ "who":"",
+ "text":"你决定完成仪式。\n\n你站在石碑前，握着护身符，感受着体内那扇正在打开的门。血月的光像水一样从天空倾泻而下，穿过你的身体，照亮了你血管里某种沉睡了很久的东西。\n\nKatherine 出现在石碑另一侧。她看着你，第一次收敛了所有笑容。\n\n「你要这样做？」她轻声问，「你知道成为守门人意味着什么吗？你会永远卡在中间，看着你爱的人一个个老去、死去，而你——」\n\n「而我不完全属于任何地方，」你替她说完，「我知道。但至少门会被关上。至少你不会再需要牺牲别人。」\n\n她沉默了很久，然后笑了——这次的笑里，有一种你第一次在她身上看见的、近似尊重的东西。",
+ "next":"c6_2b__2"},
+ c6_2b__2:{"scene":"ritual",
+ "text":"你决定完成仪式时，心里出奇地平静。血月的光像水一样倾泻而下，穿过你的身体，照亮了你血管里某种沉睡已久的东西——你能感觉到它，像一条冬眠的蛇，在你的脊柱里缓缓苏醒。\n\nKatherine 出现时，第一次收起了所有笑容。她看着你的眼神里，有你从未在她身上见过的东西——不是审视，不是嘲讽，而是一种近乎郑重的确认。\"你知道成为守门人意味着什么吗？\"她问。你说你知道。而当你说完，你发现她的眼里闪过一丝极细微的、像是羡慕又像是悲哀的光。那一刻你忽然想：也许她比谁都清楚那个位置意味着什么，因为她已经在那附近徘徊了一百四十年。",
+ "next":"c6_2b__3"},
+ c6_2b__3:{"scene":"ritual",
+ "text":"你决定成为守门人时，血月的光穿过你的身体。那一刻，你感到一种奇怪的、介于痛苦和愉悦之间的感觉——仿佛有什么东西正在你体内展开，像一朵在夜里开放的花。Katherine 看着你，眼里有羡慕。你忽然明白，她羡慕的不是你的决定，而是你的勇气——那种她还拥有、却在漫长的岁月中逐渐磨损掉的东西。你为她感到一丝悲伤，也为自己感到一丝骄傲。",
+ "next":"c6_2b__4"},
+ c6_2b__4:{"scene":"ritual",
+ "text":"你终于明白她眼里那点羡慕到底意味着什么。",
+ "next":"c6_3"},
+ c6_2c:{"scene":"night",
+ "who":"",
+ "text":"你谁也没选，去了 Salvatore 家的老宅。\n\nDamon 和 Stefan 都在。你把一切告诉了他们——Katherine、仪式、Bonnie 说的两个办法。\n\n两个人沉默了很久。然后 Damon 先开口：「别选第二个。守门人——那是活生生的囚禁。我不会让你为了这座愚蠢的小镇把自己关进牢里。」\n\n「那第一个办法呢？」\n\nStefan 接过话：「也不行。我们必须找到第三个办法。」他看着你，眼神里有种你熟悉的坚定，「总会有第三条路。Katherine 想让你以为只有两个选择——但那是她的游戏，不是我们的。」\n\n你看着他们，忽然觉得胸口松了一点。也许，你不必独自扛起一切。",
+ "next":"c6_2c__2"},
+ c6_2c__2:{"scene":"night",
+ "text":"你去了 Salvatore 家的老宅。那座房子在夜里显得格外沉默——高高的窗、生锈的铁门、爬满藤蔓的墙。Damon 和 Stefan 都在，仿佛早就知道你会来。\n\n当你说完 Bonnie 的两个办法，两兄弟的反应截然不同。Damon 几乎是立刻反对，语气激烈得不像他——\"那是一百年的囚禁，\"他说，\"我不会让你为了这座愚蠢的小镇把自己关进牢里。\"而 Stefan 则盯着地面沉默了很久，然后说出了那句让你心头一松的话：\"总会有第三条路。\"你看着他们，忽然感到一种久违的、被人接住的感觉。你不是一个人。",
+ "next":"c6_2c__3"},
+ c6_2c__3:{"scene":"night",
+ "text":"你站在 Salvatore 家老宅的客厅里，看着这对相处了一百四十年的兄弟。他们争吵、和好、再争吵——那种只有至亲才会有的相处方式。你说完两个办法后，Damon 立刻反对，Stefan 沉默思考。你忽然想，Katherine 当年是不是也站在这里，用同样的方式把他们卷进一场选择？历史在重复，而这一次，你决心不让结局也重复。",
+ "next":"c6_2c__4"},
+ c6_2c__4:{"scene":"night",
+ "text":"历史在重演，而这一次你要改写结局。",
+ "next":"c6_3"},
+ c6_3:{"scene":"ritual",
+ "who":"Katherine",
+ "portrait":"katherine",
+ "expr":"neutral",
+ "text":"无论你作了什么决定，Katherine 都在这里等你。\n\n血月高悬，石碑上的眼睛完全睁开，带着一种令人不安的、近似生命的光芒。\n\n「你知道吗，」她缓缓开口，「一百四十年前，我也站在你现在的位置。也有人问过我是谁、我该选什么。」她看着你，眼神里翻涌着复杂的东西，「我作出了我的选择——我选了永远年轻、永远饥饿、永远得不到我想要的。你呢，Elena？你会选什么？」\n\n风穿过树林，发出像叹息一样的声音。整个小镇仿佛都在屏息等待你的答案。",
+ "next":"c6_3__2"},
+ c6_3__2:{"scene":"ritual",
+ "text":"Katherine 站在石碑另一侧，血月把她的影子拉得很长，和你的一模一样。你们面对面站着，像两面相对的镜子，彼此映照出无穷多个自己。\n\n她说起一百四十年前也站在你现在的位置时，声音里有种你从未听过的东西——不是回忆的柔情，而是一种苦涩的、几乎带着自嘲的清醒。\"我选了永远年轻、永远饥饿、永远得不到我想要的，\"她说，\"你呢？\"风穿过树林，发出叹息般的声音。你忽然意识到，她问的不是\"你选什么\"，而是\"你会不会重蹈我的覆辙\"。这让你整个人的重量，忽然轻了一些——因为你在那一刻决定，你不会。",
+ "next":"c6_3__3"},
+ c6_3__3:{"scene":"ritual",
+ "text":"Katherine 站在石碑另一侧，血月把你们的影子投在地上，几乎重叠在一起。你看着她——这张和你一样的脸，这个可能就是你未来的人——心里忽然涌起一种说不清的情绪。不是恨，不是怜悯，而是一种深切的理解。她选了永生，代价是永远的孤独和饥饿。而你站在这里，即将作出一个不同的选择。你想告诉她：还有另一种活法。而你的选择本身，就是答案。",
+ "next":"c6_3__4"},
+ c6_3__4:{"scene":"ritual",
+ "text":"你看着可能的自己，决定走一条不同的路。",
+ "choicesTitle":"面对 Katherine，你说——",
+ "choices":[{"label":"「我选择相信我自己。」",
+ "fx":{"self":3,
+ "flag":"selfBelief"},
+ "next":"c6_4a"},{"label":"「我选择他们——Stefan 和 Damon。」",
+ "fx":{"stefan":1,
+ "damon":1,
+ "self":1,
+ "flag":"chooseBoth"},
+ "next":"c6_4b"},{"label":"「我不选。我要打破这场游戏。」",
+ "req":()=>S.moon===2,
+ "reqLabel":"需满月",
+ "fx":{"self":2,
+ "flag":"breakGame"},
+ "next":"c6_4c"}]},
+ c6_4a:{"scene":"ritual",
+ "who":"Katherine",
+ "portrait":"katherine",
+ "expr":"sad",
+ "text":"「我选择相信我自己。」\n\nKatherine 愣住了。然后她笑了，笑得很轻，很长。「相信你自己，」她重复着，「一百四十年前，如果我也这样说……」\n\n她没有说完。她抬起手，血月的光在她指尖流转。「你知道吗，亲爱的，你最大的不同不是你像我——而是你不像我。你有我没有的东西：你愿意为别人放下自己。」\n\n石碑上的眼睛开始闭合。仪式没有按她设想的方式完成——因为你拒绝把自己当作钥匙或锁。你只是你自己。\n\n「也许，」她轻声说，「这一次我等错了人。或者，等对了人，却问错了问题。」",
+ "next":"c6_4a__2"},
+ c6_4a__2:{"scene":"ritual",
+ "text":"你说\"我选择相信我自己\"时，Katherine 愣住了。那个表情在你看来几乎有些滑稽——一个活了一百四十年的女人，被一句如此简单的话说中了要害。她笑了，笑得很轻很长，然后重复了你的话：\"相信你自己。\"\n\n石碑上的眼睛开始闭合，仪式以她从未预料的方式完成——因为你拒绝把自己当作钥匙或者锁。你只是你自己，一个选择相信自己的普通女孩。她说\"你最大的不同是你不像我\"时，你忽然想哭。原来你一直寻找的、那个能和 Katherine 区分开的东西，不是血脉、不是命运，而只是一个最简单的选择：相信，还是不信。",
+ "next":"c6_4a__3"},
+ c6_4a__3:{"scene":"ritual",
+ "text":"你说\"我选择相信我自己\"时，声音不大，却像一块石头投进了平静的湖面。Katherine 的愣神、她的笑、她那句\"你最大的不同是你不像我\"——这一切都让你确认，你说对了。在这座被魔法、诅咒和一百四十年的执念笼罩的小镇上，最强大的力量不是咒语，不是血，而是一个人选择相信自己的决心。你以前从不知道这一点，现在你知道了。",
+ "next":"c6_4a__4"},
+ c6_4a__4:{"scene":"ritual",
+ "text":"相信自己的那一刻，你比任何时候都强大。",
+ "next":"c6_5"},
+ c6_4b:{"scene":"ritual",
+ "who":"Katherine",
+ "portrait":"katherine",
+ "expr":"intense",
+ "text":"「我选择他们。」\n\n话音刚落，Stefan 和 Damon 同时出现在空地边缘。他们像是感应到了什么，一起赶来了。\n\nKatherine 看着他们，眼神变得遥远。「你们两个，」她轻声说，「总是为我争，又总是为我分开。」她看向 Stefan，又看向 Damon，「而这一次，她为你们站在这里。」\n\n三道影子在血月下交叠。你忽然明白，Katherine 真正想要的从来不是逃离——而是有人证明，她当年没能守住的东西，其实一直存在。\n\n「好吧，」她轻声说，「让我看看，这次会不会不一样。」",
+ "next":"c6_4b__2"},
+ c6_4b__2:{"scene":"ritual",
+ "text":"你说\"我选择他们\"时，Stefan 和 Damon 同时出现在空地边缘——仿佛被某种力量召唤。三道影子在血月下交叠，把这片刻的景象定格成一幅你永远不会忘记的画面。\n\nKatherine 看着他们，说\"总是为我争，又总是为我分开\"时，声音里有一种跨越百年的疲惫。你忽然明白，你今晚站在这里为这两个人说话，某种意义上，是在替一百四十年前那个没能守住什么的自己，做一个不同的选择。而她看着你的眼神里，第一次没有了算计，只剩下一种近乎温柔的、认命的东西。",
+ "next":"c6_4b__3"},
+ c6_4b__3:{"scene":"ritual",
+ "text":"你说\"我选择他们\"时，Stefan 和 Damon 同时出现。这个场景让你心头一热——他们感应到了你的需要，不约而同地赶来。Katherine 看着他们，说\"总是为我争，又总是为我分开\"，声音里有跨越百年的疲惫。你忽然懂了：她这一百四十年，一直在两个男人之间、在爱与恨之间、在生与死之间摇摆。而你今晚，要为这段摇摆画上句号——用你自己的方式。",
+ "next":"c6_4b__4"},
+ c6_4b__4:{"scene":"ritual",
+ "text":"三道影子交叠，一百四十年的结开始松动。",
+ "next":"c6_5"},
+ c6_4c:{"scene":"ritual",
+ "who":"",
+ "text":"「我不选。」你说，「你把这当成一场游戏——给我两个选项，逼我挑一个。但我不玩。」\n\n你举起护身符，然后——把它扔进了石碑的眼睛里。\n\n everybody 都愣住了。Katherine 的脸第一次失去了所有表情。「你做了什么？」\n\n「我说过，我不玩你的游戏。」护身符嵌进石碑，眼睛骤然爆发出刺目的光。血月的光柱从天而降，穿透石碑、穿透你，照亮了整个 Mystic Falls。\n\n在那一瞬间，你听见了一百四十年所有的秘密、所有的哭声、所有的渴望。然后，一切归于寂静。",
+ "next":"c6_4c__2"},
+ c6_4c__2:{"scene":"ritual",
+ "text":"你说\"我不选\"的时候，声音里的坚定连你自己都惊讶。你把这当成一场游戏——而你不玩。当你把护身符扔进石碑的眼睛里时，整个世界仿佛屏住了呼吸。\n\n光柱从天而降，穿透你，照亮整座小镇。在那一瞬间，你听见了一百四十年所有的秘密、所有的哭声、所有的渴望——它们像潮水一样涌进你的身体，又潮水般退去。Katherine 问\"你做了什么\"时，声音里第一次有了慌乱。而你说\"我不玩你的游戏\"时，感到了一种前所未有的、彻底的自由。打破规则的人，才能获得真正的自由。",
+ "next":"c6_4c__3"},
+ c6_4c__3:{"scene":"ritual",
+ "text":"你说\"我不选\"，把护身符扔进石碑的眼睛里时，感到一种酣畅淋漓的自由。光柱穿透你，一百四十年的秘密像潮水一样涌过你。Katherine 的慌乱、你的平静，形成了鲜明的对比。你忽然明白，打破规则的人之所以自由，不是因为他们战胜了规则，而是因为他们根本不承认规则的合法性。你从不承认 Katherine 有权给你出这道选择题，所以你赢了。",
+ "next":"c6_4c__4"},
+ c6_4c__4:{"scene":"ritual",
+ "text":"不承认题目合法性的人，才是真正的赢家。",
+ "next":"c6_5"},
+ c6_5:{"scene":"dawn",
+ "who":"",
+ "text":"血月褪去时，天已经快亮了。\n\n空地上只剩下你一个人——或者说，几乎一个人。石碑上的眼睛闭上了，永远地。护身符不见了，融入了石碑，或者融入了你。你说不清。\n\nKatherine 消失了。走之前，她留给你最后一句话，声音轻得像风：「谢谢你，让我终于可以停下来。」\n\n你不知道她去了哪里，也不知道这算不算结局。你只知道，小镇底下的那些声音安静了，而你的世界里，Something 永久地改变了。",
+ "next":"c6_5__2"},
+ c6_5__2:{"scene":"dawn",
+ "text":"血月褪去，天空从深红变成灰蓝。空地上只剩下你和那块重新闭上眼睛的石碑。Katherine 消失了，走之前那句\"谢谢你让我终于可以停下来\"在空气里久久不散。\n\n你跪在草地上，浑身脱力，却感到一种奇怪的轻——仿佛有什么沉重的东西从你身上被拿走了。你不知道那是不是 Katherine 的执念，还是你自己一直背负的某种东西。护身符不见了，融入了石碑，或者融入了你——你说不清，也不再急于弄清。你抬起头，看着天边第一缕晨光，忽然想：也许有些问题，不需要答案也能活下去。",
+ "next":"c6_5__3"},
+ c6_5__3:{"scene":"dawn",
+ "text":"血月褪去，Katherine 消失了。\"谢谢你让我终于可以停下来\"——这句话在她消失后久久回荡。你跪在草地上，感到一种巨大的轻，仿佛有什么压了你很久的东西被拿走了。也许是她的执念，也许是你自己的恐惧。你抬起头，看着天边第一缕晨光，忽然想起墓园里那个雨夜的自己——那个连呼吸都小心翼翼的女孩。她如果看见现在的你，一定会惊讶：原来你可以这么勇敢。",
+ "next":"c6_5__4"},
+ c6_5__4:{"scene":"dawn",
+ "text":"你跪在晨光里，像重新开始了一次人生。",
+ "next":"c7_0"},
+ c7_0:{"scene":"dawn",
+ "enter":{"chapter":7,
+ "night":false,
+ "moon":3},
+ "who":"",
+ "portrait":null,
+ "text":"第七章 · 黎明之前\n\n你在空地上待到天亮。\n\n晨光一寸寸爬过草地，把石碑的影子拉长、变淡。那只眼睛彻底闭上了，石碑看起来只是一块普通的、爬满青苔的旧石头。如果不是浑身酸痛，如果不是口袋里那片残存的紫罗兰香气，你几乎要以为这一夜只是一场太真实的梦。\n\n手机震了无数次。Bonnie、Caroline、Jeremy、还有——你看到那两个名字时停顿了一下——Damon 和 Stefan。",
+ "next":"c7_0__2"},
+ c7_0__2:{"scene":"dawn",
+ "text":"你在空地上一直待到露水打湿了裤脚。晨光一寸寸爬过草地，把石碑的影子拉长、变淡，最后几乎和周围的青苔融为一体。你伸手摸了摸那块石头——冰冷、粗糙、平平无奇，和昨晚那个悬浮着护身符、睁着眼睛的石碑判若两物。\n\n你甚至开始怀疑，昨晚的一切是不是一场太过逼真的梦。可口袋里那股残留的紫罗兰香气是真的，浑身肌肉的酸痛是真的，手机里那一串未读消息也是真的。你深吸一口气，把手机从口袋里掏出来，屏幕亮起的瞬间，你的眼睛被刺得微微一眯。",
+ "next":"c7_0__3"},
+ c7_0__3:{"scene":"dawn",
+ "text":"你在空地上待到露水打湿裤脚，看着石碑的影子一点点变淡。你伸手摸它——冰冷、粗糙、平平无奇。你忽然想起那枚护身符最初在 Bonnie 手里的样子：那时候它也只是块普通的旧铜片。你看，神奇的东西归于平凡，平凡的东西也可能藏着神奇。这座小镇教给你的最重要的一课，大概就是：不要用眼睛判断任何东西。你最后看了一眼石碑，转身离开。",
+ "next":"c7_0__4"},
+ c7_0__4:{"scene":"dawn",
+ "text":"神奇归于平凡，而平凡里藏着最深的秘密。",
+ "next":"c7_1"},
+ c7_1:{"scene":"dawn",
+ "who":"",
+ "text":"你一个个回过去。\n\n「我没事，」你给 Bonnie 回，「结束了。」你不知道这算不算真的结束，但你需要说点什么，让担心你的人安心。\n\nCaroline 发来一连串感叹号和一个「你绝对猜不到昨天发生了什么！」。你笑了笑——她的世界依然完好，这让你感到一种奇怪的感激。\n\nJeremy 问你早饭吃什么。这个最平常的问题，反而让你鼻子一酸。\n\n最后一个是 Damon 和 Stefan。他们几乎同时发来消息，内容却截然不同。",
+ "next":"c7_1__2"},
+ c7_1__2:{"scene":"dawn",
+ "text":"你一条条回复消息，像在小心翼翼地重新接回那根被扯断的、通往正常生活的线。\"我没事\"——这三个你打了又删、删了又打的字，最后还是发了出去。你不知道\"没事\"是什么意思。也许它的意思只是\"我还能打字，还能回复，还能让你们放心\"。\n\nCaroline 的连串感叹号让你笑了。她大概以为你度过了人生中最浪漫的一个夜晚，完全不知道这夜里发生的事，比她能想象的要离奇一百倍。你忽然很珍惜她的这份无知——那是她仍能快乐的原因。你没有义务把她也拖进这片灰色地带。",
+ "next":"c7_1__3"},
+ c7_1__3:{"scene":"dawn",
+ "text":"你一条条回复消息，像在重新编织那根通往日常的线。\"我没事\"——这三个字你打了又删、删了又打。你忽然想，\"没事\"到底是什么意思？也许它的意思是\"我还能站起来，还能笑，还能让爱我的人放心\"。这是一种成年人的体面——把自己的风暴藏起来，只在朋友圈里发一条云淡风轻的状态。你今晚，第一次真切地体会到了这种体面背后的孤独。",
+ "next":"c7_1__4"},
+ c7_1__4:{"scene":"dawn",
+ "text":"\"没事\"两个字，是成年人最体面的伪装。",
+ "choices":[{"label":"先回 Damon 的消息",
+ "fx":{"damon":2,
+ "self":-1,
+ "flag":"lastDamon"},
+ "next":"c7_2a"},{"label":"先回 Stefan 的消息",
+ "fx":{"stefan":2,
+ "self":1,
+ "flag":"lastStefan"},
+ "next":"c7_2b"},{"label":"谁也不回，先回家面对 Jeremy",
+ "fx":{"self":2,
+ "flag":"goHome"},
+ "next":"c7_2c"}]},
+ c7_2a:{"scene":"school",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smile",
+ "text":"他的消息只有一句：「老地方，如果你想见我。」\n\n老地方——Halfway Home 酒吧外的台阶。你去了，他果然在那里，像是知道你一定会来。\n\n「 Katherine 走了，」你说。\n\n「我知道。」他转动着那枚永远在指间的硬币，「我能感觉到。这座镇子轻了一点。」他看着你，眼神里有种你从未见过的东西——不是欲望，不是玩笑，而是一种近乎安静的释然。「你做了我们一百年都没做到的事。」\n\n「什么？」\n\n「你让她停下来。」",
+ "next":"c7_2a__2"},
+ c7_2a__2:{"scene":"school",
+ "text":"你说\"一整晚\"的时候，自己在电话这头笑了。你几乎能想象出 Damon 在那头挑眉的样子。他沉默的那两秒里，你听见了酒杯轻轻放在桌上的声音。\n\n见面后，他没有开灯，任由月光做唯一的光源。你们聊了很多——不是为了得出结论，而只是为了把这一夜说出口，让它从心里搬到空气里，变得可以呼吸。当你终于问出那个憋了很久的问题时，他没有直接回答，只是握住你的手，说\"我等得起\"。你看着他，忽然想：一个活了一百四十年的人说\"等得起\"，这句话的分量，比任何情话都要重。",
+ "next":"c7_2a__3"},
+ c7_2a__3:{"scene":"school",
+ "text":"你约 Damon 在老地方见面，说了\"一整晚\"。电话那头他沉默的两秒里，你几乎能听见他放下酒杯的声音。你们聊到深夜，把这一夜说出口，让它从心里搬到空气里。当你问出那个关于\"以后\"的问题，他没有直接回答，只是握住你的手，说\"你看着办，我等得起\"。你看着他，忽然想：一个活了一百四十年的人说\"等得起\"，这句话背后的分量，比世上任何情话都要沉。",
+ "next":"c7_2a__4"},
+ c7_2a__4:{"scene":"school",
+ "text":"一句\"等得起\"，是一个永生者最重的承诺。",
+ "next":"c7_3"},
+ c7_2b:{"scene":"school",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"neutral",
+ "text":"他的消息是：「我在老地方等你。不着急。」\n\n老地方——学校的天台，那个他曾经指给你看整座小镇的地方。你去了，他站在栏杆边，晨光把他金色的头发照得透明。\n\n「结束了，」你说。\n\n「嗯。」他转过身，微笑着，「你知道吗，我一直在想，如果 Katherine 真的消失，我会是什么感觉。我以为我会解脱。」他停顿了一下，「但刚才我看到你从林子方向走来，我只感到……感激。谢谢你没有把自己关进那扇门里。」\n\n他向你伸出手。",
+ "next":"c7_2b__2"},
+ c7_2b__2:{"scene":"school",
+ "text":"你几乎是扑到天台上去见他的。他站在栏杆边，晨光把他的轮廓镀上了一层柔和的金。你把一切都告诉了他——不是经过修饰的版本，而是完整的、带着所有黑暗细节的真相。\n\n他听完，没有露出惊讶，只是把你紧紧拥进怀里。那怀抱是凉的，却让你感到前所未有的安心。\"你不再有秘密了，\"他说，\"至少没有关于你的秘密。\"你靠在他肩上，第一次觉得，被一个人完整地知道、完整地接纳，是这个世界能给出的最好的东西。而这一次，你没有觉得自己被关进任何盒子里。",
+ "next":"c7_2b__3"},
+ c7_2b__3:{"scene":"school",
+ "text":"你几乎是扑到天台去见 Stefan 的。他把外套披在你肩上，尽管你并不冷。你靠着他的肩，看月亮爬过钟楼。他说要把秘密一件件告诉你——如果你愿意听。你\"嗯\"了一声，没抬头，怕他看见你眼里的泪光。你忽然意识到，你要的从来不是一个完美的、没有秘密的人，而是一个愿意对你坦诚、愿意陪你面对的人。而此刻，你找到了。",
+ "next":"c7_2b__4"},
+ c7_2b__4:{"scene":"school",
+ "text":"完整地被接纳，是这个世界最好的礼物。",
+ "next":"c7_3"},
+ c7_2c:{"scene":"school",
+ "who":"",
+ "text":"你谁也没回，径直回了家。\n\nJeremy 在厨房煎蛋，手忙脚乱地把蛋煎糊了。「你昨晚去哪了？」他头也不抬地问，「别告诉我又是墓园。」\n\n「不是墓园，」你说，「是……一个很远的地方。」\n\n他耸耸肩，把糊蛋盛到盘子里：「不管去哪，早饭得吃。」\n\n你坐下来，和他一起吃那盘焦黑的煎蛋。这是这两天里，你第一次觉得脚踏实地。没有血月，没有护身符，只有一个会把蛋煎糊的弟弟。你想，也许这就是你 fighting 的理由。",
+ "next":"c7_2c__2"},
+ c7_2c__2:{"scene":"school",
+ "text":"你径直回家，是因为你忽然明白了一件事：在所有你想逃开的东西之后，真正能把你拉回地面的，是这些最平常的日常。Jeremy 会把鸡蛋煎糊，会抱怨学校，会用笨拙的方式关心你——而这一切，就是你想守护的东西的根。\n\n你们坐在厨房的小桌前，吃着那盘焦黑的煎蛋。他问东问西，你有一搭没一搭地答着。阳光从窗户照进来，落在桌上的便利贴上。你看着弟弟大口吞咽的模样，忽然鼻子一酸。你想起所有那些让你半夜惊醒的恐惧——失去、孤独、被错认——而在这里，在这盘焦蛋面前，它们全都退到了远处。这就是你战斗的理由，从来都是。",
+ "next":"c7_2c__3"},
+ c7_2c__3:{"scene":"school",
+ "text":"你和 Jeremy 坐在厨房里吃那盘焦黑的煎蛋。他问东问西，你有一搭没一搭地答着。阳光照在桌上的便利贴上——\"姐姐，今天也要好好的\"。你看着弟弟大口吞咽的模样，鼻子一酸。所有的恐惧——失去、孤独、被错认——在这盘焦蛋面前都退到了远处。你忽然懂了：你战斗、你冒险、你面对那些可怕的东西，从来不是为了什么宏大的理由，而只是为了守护这一刻——这个能闻到煎蛋香味的平凡清晨。",
+ "next":"c7_2c__4"},
+ c7_2c__4:{"scene":"school",
+ "text":"守护一盘焦蛋，就是你所有勇敢的起点。",
+ "next":"c7_3"},
+ c7_3:{"scene":"dusk",
+ "who":"",
+ "text":"那天傍晚，你把发生过的一切写进日记。\n\n从墓园的雨，到走廊的谎，到篝火旁的选择，到血月下的对峙。你写得很慢，每一个字都像在给那段日子盖一个印章——承认它发生过，承认它改变了你，然后，把它放进一个你能带着走的地方。\n\n写完之后，你在最后一行停住笔。你想写点什么作为结束，却发现没有一句话配得上「结束」这个词。\n\n最后你只写了一句：「天亮了。我没有回头。」",
+ "next":"c7_3__2"},
+ c7_3__2:{"scene":"dusk",
+ "text":"你写日记写到深夜。台灯的光把你的影子投在墙上，巨大的、摇晃的。你一笔一笔地写，像在给这段日子盖一个又一个的印章——承认它发生过，承认它改变了你，然后，把它放进一个你能带着走、又不会被它压垮的地方。\n\n写到最后一行时，你停住了。你想找一个词、一句话来为这段经历画上句号，却发现没有任何语言配得上\"结束\"这个词。这一夜没有真正结束，它只是变成了你的一部分，像一道愈合中的疤，会永远提醒你那段日子。最后你只写了那句最简单的话——\"天亮了，我没有回头。\"你知道，未来的某一天，你会为今天写下这句话而感到骄傲。",
+ "next":"c7_3__3"},
+ c7_3__3:{"scene":"dusk",
+ "text":"你写日记写到深夜。台灯把你的影子投在墙上，巨大而摇晃。你一笔一笔地写，像在给这段日子盖一个又一个印章。写到最后一行，你停住了——你想找一个词为这段经历画上句号，却发现没有任何语言配得上\"结束\"。这一夜没有真正结束，它变成了你的一部分，像一道愈合中的疤，永远提醒你那段日子。最后你写下\"天亮了，我没有回头\"，然后合上本子，，走到窗边看了一眼黎明。",
+ "next":"c7_3__4"},
+ c7_3__4:{"scene":"dusk",
+ "text":"你没有回头，因为前方有值得你奔赴的东西。",
+ "choicesTitle":"这一天，你最后——",
+ "choices":[{"label":"给 Damon 打电话，约他见面",
+ "fx":{"damon":2,
+ "stefan":-1,
+ "self":-1,
+ "flag":"finalDamon"},
+ "next":"c7_4a"},{"label":"给 Stefan 打电话，约他见面",
+ "fx":{"stefan":2,
+ "damon":-1,
+ "self":1,
+ "flag":"finalStefan"},
+ "next":"c7_4b"},{"label":"合上日记，一个人去看日出",
+ "fx":{"self":2,
+ "stefan":-1,
+ "damon":-1,
+ "flag":"finalSelf"},
+ "next":"c7_4c"}]},
+ c7_4a:{"scene":"night",
+ "who":"Damon",
+ "portrait":"damon",
+ "expr":"smirk",
+ "text":"电话响了三声，他接起。\n\n「我猜到你会打来，」他说，「给你十分钟，还是——」\n\n「一整晚。」你说。\n\n电话那头沉默了两秒，然后传来一声低低的笑。「你在学我。」他说。\n\n你们在老地方见面。他没有开灯，月光够亮。你们聊了很多——关于 Katherine，关于这两年，关于那个你终于敢问出口的问题：「我们之间，会怎么样？」\n\n他没有直接回答。他只是握住你的手，说了一句：「你看着办。我等得起——我等得起一切。」",
+ "next":"c7_4a__2"},
+ c7_4a__2:{"scene":"night",
+ "text":"电话拨出去的那一刻，你的手指是抖的。你不知道自己在期待什么——一个拥抱？一句承诺？还是一个和从前一样的、带着玩笑的回避？\n\n他说\"我猜到你会打来\"时，你笑了。你们在老地方见面，月光依旧。你问出那个关于\"以后\"的问题时，做好了各种准备的——唯独没准备好他的沉默。他握住你的手，说\"你看着办，我等得起一切\"。你忽然明白，这不是一个完美的答案，但它是真实的。而在一个充满谎言和算计的世界里，真实，已经是最奢侈的东西了。",
+ "next":"c7_4a__3"},
+ c7_4a__3:{"scene":"night",
+ "text":"你打电话给 Damon 时，手指是抖的。他说\"我猜到你会打来\"，你笑了。你们在月光下见面，你问出那个关于\"以后\"的问题，做好了各种准备的——唯独没准备好他的沉默和他那句\"你看着办，我等得起一切\"。你忽然明白，这不是一个完美的答案，但它是真实的。而在一个充满谎言和算计的世界里，真实，已经是最奢侈、最珍贵的东西了。你握着他的手，决定接受这份不完美。",
+ "next":"c7_4a__4"},
+ c7_4a__4:{"scene":"night",
+ "text":"在充满算计的世界里，真实是最奢侈的馈赠。",
+ "next":"c7_5"},
+ c7_4b:{"scene":"night",
+ "who":"Stefan",
+ "portrait":"stefan",
+ "expr":"smile",
+ "text":"电话响了，他几乎是立刻接起，像是一直守在旁边。\n\n「我想见你，」你说。\n\n「我也是。」\n\n你们在教堂前的台阶上见面。他把外套披在你肩上，尽管你并不冷。你们并排坐着，看月亮慢慢升过钟楼。\n\n「我不再有秘密了，」他说，「至少没有关于你的秘密。剩下的，我会一件件告诉你——如果你愿意听。」\n\n你靠在他肩上。这一次，你不觉得冷，也不觉得自己被关在盒子里。你觉得被尊重。",
+ "next":"c7_4b__2"},
+ c7_4b__2:{"scene":"night",
+ "text":"你打电话给他时，几乎是立刻就接通了，仿佛他一直握着手机在等。这个细节让你心里一暖——原来有人也在数着时间，等你的一句话。\n\n教堂前的台阶冰凉，他把自己的外套披在你肩上，尽管你并不冷。你靠着他的肩膀，看月亮慢慢爬过钟楼。他说要把所有的秘密一件件告诉你——如果你愿意听。你\"嗯\"了一声，没有抬头。你怕一抬头，就会让他看见你眼里的泪光。而你今晚，只想做一个被温柔对待的人，不需要勇敢，不需要坚强，只需要被好好地、郑重地爱着。",
+ "next":"c7_4b__3"},
+ c7_4b__3:{"scene":"night",
+ "text":"你打电话给 Stefan，几乎是立刻就接通了——仿佛他一直握着手机在等。这个细节让你心里一暖。教堂前的台阶冰凉，他把自己的外套披在你肩上。你靠着他，第一次觉得，被一个人完整地知道、完整地接纳，是这个世界能给出的最好的东西。你今晚不想勇敢，不想坚强，只想被好好地、郑重地爱着。而这一刻，你终于允许自己这样想了。",
+ "next":"c7_4b__4"},
+ c7_4b__4:{"scene":"night",
+ "text":"你终于允许自己，只是被好好地爱着。",
+ "next":"c7_5"},
+ c7_4c:{"scene":"dawn",
+ "who":"",
+ "text":"你合上日记，穿上外套，一个人走到镇子的最高处。\n\n天边泛起第一缕光。你看着那道光一点点漫过小镇——漫过墓园，漫过学校，漫过 Wickery Bridge，漫过那片沉睡的树林。\n\n你没有给任何人打电话。不是因为你不在乎他们，而是因为在这个清晨，你需要先和一个人待在一起——你自己。\n\n那个在墓园里没有回头的女孩，那个在篝火旁做选择的女孩，那个在血月下说「我不玩」的女孩——她们都在这里，在这个看着日出的你身上。",
+ "next":"c7_4c__2"},
+ c7_4c__2:{"scene":"dawn",
+ "text":"你合上日记，没有给任何人打电话。你穿上外套，独自走向镇子的最高处——那个能俯瞰整个 Mystic Falls 的山坡。\n\n天边泛起第一缕光，把小镇从沉睡中一点点唤醒。你看着那道光漫过墓园、漫过学校、漫过 Wickery Bridge、漫过那片藏着秘密的树林。你没有给任何人打电话，不是因为不在乎——恰恰相反，是因为你太在乎了，以至于你需要先把自己找回来，才能完整地回到他们身边。站在山顶的你，第一次感到一种踏实的、不依附于任何人的完整。",
+ "next":"c7_4c__3"},
+ c7_4c__3:{"scene":"dawn",
+ "text":"你合上日记，没有给任何人打电话，独自走向镇子最高处的山坡。天边泛起第一缕光，把小镇一点点唤醒。你看着那道光漫过墓园、学校、Wickery Bridge、那片藏着秘密的树林。你没有打电话，不是因为不在乎，恰恰是因为太在乎——你需要先把自己找回来，才能完整地回到他们身边。站在山顶，你第一次感到一种踏实的、不依附于任何人的完整。",
+ "next":"c7_4c__4"},
+ c7_4c__4:{"scene":"dawn",
+ "text":"你先找回自己，才能完整地回到他们身边。",
+ "next":"c7_5"},
+ c7_5:{"scene":"dawn",
+ "who":"",
+ "text":"新的一天开始了。\n\nMystic Falls 和往常一样醒来：送奶车、遛狗的老人、百叶窗上的光。没有人知道昨夜发生了什么，没有人知道那扇门曾经打开过又关上。\n\n但你知道。而你知道的这些，会永远改变你看这个世界的方式。\n\n有些夜晚不会结束，它们只是换一种方式跟着你。而有些路，一旦走上，就再也回不了头。\n\n你最后看了一眼冉冉升起的太阳，然后转身，朝你的下一段人生走去。",
+ "next":"c7_5__2"},
+ c7_5__2:{"scene":"dawn",
+ "text":"新的一天开始了，和过去无数个新的一天一样平常。送奶车驶过街道，老人牵着狗散步，阳光穿过百叶窗，在地板上画出一道道光。没有人知道昨夜发生了什么，没有人知道那扇门曾经打开过又关上，也没有人知道，有个女孩在满月下的树林里，说出了\"我不玩\"三个字。\n\n可你知道。你知道的这些，会永远改变你看这个世界的方式——你会更谨慎地对待秘密，更珍惜那些愿意对你坦诚的人，也更相信自己的判断。你最后看了一眼冉冉升起的太阳，深吸一口气，转身朝你的下一段人生走去。脚步很稳。这一次，你确定自己不会再回头了。",
+ "next":"c7_5__3"},
+ c7_5__3:{"scene":"dawn",
+ "text":"新的一天开始了，和过去无数个新的一天一样平常。送奶车、遛狗的老人、百叶窗的光。没有人知道昨夜发生了什么，没有人知道那扇门曾经打开又关上。可你知道。你知道的这些，会永远改变你看世界的方式——你会更谨慎地对待秘密，更珍惜坦诚你的人，更相信自己的判断。你最后看了一眼冉冉升起的太阳，深吸一口气，转身走进你的下一段人生。脚步很稳。这一次，你确定，不会再回头了。",
+ "next":"c7_5__4"},
+ c7_5__4:{"scene":"dawn",
+ "text":"你走进晨光，脚步稳得像从未犹豫过。",
+ "ending":true}
+};
+
+/* ==================== 结局 ==================== */
+const endings={
+damon_clear:{"title":"危险的诚实",
+ "tag":"阵营 Damon · 基调 清醒",
+ "text":"你说了很多实话，多到连自己都觉得陌生。\n\nDamon 没有吻你。他把那串护身符还给你，说：「留着吧。等你不再需要勇气的时候，再决定要不要用它。」\n\n你走出派对时天已经亮了。你仍然害怕，但你清楚自己害怕的是什么——这已经足够。\n\n后来你明白，诚实从来不是安全的，它只是让你在黑暗里，至少能看清自己站在哪里。\n\n〔尾〕回望那一夜，你终于理解，诚实从来不是软弱的同义词。你带着满身的清醒走出迷雾，虽然知道前路仍有阴影，但不再害怕直视它们。这份清醒，是 Damon 永远给不了你的礼物——因为那是你自己给自己的。\n\n〔尾二〕而当你终于能够平静地讲述那个夜晚，你会发现，真正让你自由的不是离开了谁，而是你终于肯相信自己。清醒的人会疼，但清醒的人不会再被同一个谎言困住两次。你带着这份疼爱，继续往前走。\n\n〔尾三〕你明白，清醒的代价是孤独，但孤独的回报是自由。\n\n〔尾四〕你终于可以回头看那一夜，而不必再逃跑。这本身，就是最大的胜利。\n\n〔尾五〕故事的最后，你没有成为谁的传说，只成为了你自己。这已经足够。\n\n〔尾六〕你终于明白，真正的勇敢不是不害怕，而是害怕时依然选择看清。你带着这份清醒走进每一个明天，从此再不惧怕任何夜晚。\n\n〔尾七〕你终于能够坦然地讲述那个夜晚，不再逃避，也不再美化。这就是成长真正的样子。"},
+damon_dark:{"title":"血色的拥抱",
+ "tag":"阵营 Damon · 基调 沉溺",
+ "text":"满月把你的影子拉得很长，长到盖过了他的。\n\nDamon 在你耳边说：「你不必再选了。」于是你真的不再选。\n\n后来有人问你那晚发生了什么，你只记得月光很凉，而他的手比月光更凉。\n\n你再也没有回头——不是因为不敢，而是因为回头会看见那个还没做出选择的自己，而你已经不认识她了。\n\n〔尾〕多年以后，你偶尔会在满月的夜里惊醒，梦见那个还没做出选择的自己。她站在岔路口，回头看你，眼神里有你没有听从的警告。你想对她说点什么，却发现自己已经发不出声音——沉溺的人，是没有资格劝告别人的。\n\n〔尾二〕月亮照常升起又落下，小镇照常醒来又睡去。只有你停在时间里，守着那个再也无法更改的选择。你偶尔会想，如果那晚回头的是另一个方向的自己，会不会看见完全不同的风景。可这个念头，你从不允许它停留太久。\n\n〔尾三〕你终于成了自己曾经害怕的那个人，却再也找不到回去的路。\n\n〔尾四〕你选择了最浓烈的那杯酒，如今独自品尝它漫长的余味。\n\n〔尾五〕你把自己留在了那个夜晚，从此与那个能让你燃烧的世界，再无交集。\n\n〔尾六〕你用一夜的沉溺，换来了一生的回味，也换来了一个再也找不回的自己。\n\n〔尾七〕你把自己交给了一个没有回头的承诺，从此月光下只有你一个人的影子，被拉得很长很长。"},
+damon_rift:{"title":"一夜之后",
+ "tag":"阵营 Damon · 基调 裂隙",
+ "text":"你给了他秘密，却没给自己留下退路。\n\n第二天，他的储物柜空了。桌上只有一张纸条：「你以为是你在选我，其实是你选了不回头。」\n\n雨又下了起来。你终于明白，那天晚上真正跑掉的人是你。\n\n有些裂隙不会愈合，它们只是被时间磨得更光滑，好让你每次经过时，都能感觉到那道缝的存在。\n\n〔尾〕你学会了在雨夜里不再等待任何人。储物柜、纸条、那场没有告别的离开，都成了你成长的一部分。你终于明白，有些人出现在你生命里，不是为了陪你走到最后，而是为了教会你如何在他们离开后，依然站得笔直。\n\n〔尾二〕后来你很少再想起他，只在下雨的夜里，那张纸条会不请自来。你已经不再追问那天晚上真正跑掉的是谁，因为答案已经不重要。重要的是，你终于学会了在裂隙之上，重新安装自己的方向。\n\n〔尾三〕有些告别没有仪式，只有一场无人知晓的雨，和一颗慢慢变硬的心。\n\n〔尾四〕你没能在那条裂隙上架起桥梁，却学会了在裂隙旁边重新盖房子。\n\n〔尾五〕你带着那道裂隙继续生活，并终于明白，有些伤口的意义，是提醒你别再走回头路。\n\n〔尾六〕雨还在下，只是这一次，你学会了自己撑伞，不再等那个不会回来的人。你终于可以一个人，安稳地走完整个夜晚。\n\n〔尾七〕你把那段日子折进记忆的角落，只在偶尔落雨时，听见它发出轻微的声响。"},
+stefan_clear:{"title":"安全的谎言",
+ "tag":"阵营 Stefan · 基调 清醒",
+ "text":"你选择了那个不会在夜里敲门的人。\n\nStefan 递给你一杯热可可，笑着说「我们都是新人」。你握着杯子，想起墓园里那双没有被雨打湿的肩膀。\n\n有些秘密不说出口，就能假装不存在——但你决定从明天开始，慢慢说出来。\n\n安全是一种礼物，也是一种笼子。你愿意走进去，是因为你相信，他会替你打开门。\n\n〔尾〕你慢慢说出了所有的秘密，一件一件，像在拆开一个缠了很久的结。他从未催促，只是每次都认真地听。你们之间那块曾经结冰的玻璃，终于在日复一日的坦诚里，化成了可以照见彼此的清水。安全不是笼子，是两个人都愿意留下的地方。\n\n〔尾二〕你们后来养成了习惯，每晚睡前把当天的小事说给彼此听——哪怕只是一顿难吃的晚饭。这些琐碎的分享，像一砖一瓦，把当初那道结冰的玻璃，彻底砌成了一间可以住一辈子的屋子。原来所谓安全，就是这样被一天天建起来的。\n\n〔尾三〕信任不是一次性的交付，而是无数个愿意继续相信的清晨。\n\n〔尾四〕一砖一瓦建起来的东西，经得起时间，也经得起偶尔的风雨。\n\n〔尾五〕你们把每个普通的日子都过成了承诺，这比任何誓言都更长久。\n\n〔尾六〕你终于相信，被温柔对待不必以交出自我为代价。\n\n〔尾七〕你们用无数个平凡的日子证明，最珍贵的从来不是惊心动魄，而是长久的、温柔的陪伴。"},
+stefan_dark:{"title":"永不邀你入夜",
+ "tag":"阵营 Stefan · 基调 沉溺",
+ "text":"你把自己交给了他的保护，也交出了提问的权利。\n\n他每晚都站在你窗外，从不进门。你说「进来吧」，他说「还不是时候」。\n\n你渐渐分不清：是他不肯邀请你，还是你不敢走过去。\n\n被保护的感觉很好。好到你忘了问，保护的原点到底是什么。\n\n〔尾〕你成长为一个懂得等待的人，却也渐渐忘了自己原本想去哪里。他的窗始终为你亮着，你却再没想过要敲开它。有些保护温柔得像一场漫长的催眠，你在里面睡了很久，久到分不清那是幸福，还是一场不愿醒来的梦。\n\n〔尾二〕你活成了别人眼里被妥善照顾的人，所有人都羡慕你的安稳。只有你知道，窗外那道身影从不进门，而你也从未真正迈出过那一步。你和时间达成了某种默契：不问，不走，就这样保持一个不会破碎、也不会完整的距离。\n\n〔尾三〕你守着一份不会打破的安静，也守着一份永远不会圆满的期待。\n\n〔尾四〕你终于明白，永远停在门外的人，其实也从里面把门反锁了。\n\n〔尾五〕你终于在那份安静里，听见了自己很久没有发出过的声音——它很轻，却还在。\n\n〔尾六〕你在等待中慢慢老去，只有那份温柔，始终如初，也始终停在门外。\n\n〔尾七〕你在那份永不打破的安静里，慢慢变成了一个连自己都觉得陌生的人。"},
+stefan_rift:{"title":"第二个警告",
+ "tag":"阵营 Stefan · 基调 裂隙",
+ "text":"你说了实话，也保留了太多没说出口的部分。\n\nStefan 看着你的眼睛：「你还有一件事没告诉我。」\n\n你摇头。他点头，转身走进人群。那是他第二次相信你，也是最后一次。\n\n信任碎掉的时候没有声音。你甚至是在很久之后，才听见那声裂响的回音。\n\n〔尾〕那声裂响的回音，伴随了你很久。你常常想起如果当初多说一句、少藏一点，结局会不会不同。可人生没有重来的机会，只有向前的路。你带着那份遗憾继续生活，并把它变成了一个教训：信任一旦给出，就别再用谎言去测试它的边界。\n\n〔尾二〕多年后你再遇见他，你们礼貌地寒暄，像两个熟悉的陌生人。你想起那句\"还有一件事没告诉我\"，忽然释然——有些信任碎了就碎了，你能做的，只是别让同一块碎片，再划伤下一个愿意相信你的人。\n\n〔尾三〕你终于懂得，被相信是一种幸运，而辜负它，是一种无法弥补的遗憾。\n\n〔尾四〕从那以后，你说出的每一句话都更谨慎，因为你知道信任有多脆弱。\n\n〔尾五〕你把教训带进往后每一次对话，从此再没有把信任当作理所当然。\n\n〔尾六〕你需要很久才明白，第二个警告之后，再也没有第三个机会。\n\n〔尾七〕你把那次教训刻进心里，从此每一次开口，都比从前多了一分郑重。"},
+self_clear:{"title":"你自己的秘密",
+ "tag":"阵营 独立 · 基调 清醒",
+ "text":"你没有把任何人放在第一位。\n\n你告诉 Bonnie 全部，也告诉 Stefan 真相；你承认自己害怕，也承认自己好奇。\n\n他们都说你太天真。但只有你知道：这是你第一次，没有被任何人的故事推着走。\n\n你走出那条路的时候，天正好亮了。你回头看了一眼，不是舍不得，只是想记住——这是你自己选的方向。\n\n〔尾〕你走出的那条路，起初很冷清，走着走着却亮了起来。因为你终于发现，当一个人不再把命运交到别人手里，她自己就会成为光源。那些说你天真的人后来都沉默了，因为他们看到，你用独立走出了一条谁也未曾预料的路。\n\n〔尾二〕你走的那条路并不总是平坦，也曾在没有星星的夜里怀疑过自己。但每次怀疑之后，你都会更确定一点：属于你的人生，只能由你亲自走完。这份笃定，成了你此生最赖以生存的武器。\n\n〔尾三〕你不需要谁来证明你的选择正确，因为你每天都在用生活回答这个问题。\n\n〔尾四〕你活成了自己的答案，这比任何人的认可都更让你心安。\n\n〔尾五〕你走的路越来越宽，因为它是你用自己的脚，一寸寸量出来的。\n\n〔尾六〕你没有成为谁的影子，你只是成为了完整的自己。\n\n〔尾七〕你终于活成了一个完整的圆，不依附、不亏欠，只是安静而坚定地做自己。"},
+self_dark:{"title":"满月下的第三种可能",
+ "tag":"阵营 独立 · 基调 沉溺",
+ "text":"满月照亮了所有人的秘密，唯独没有照亮你自己的。\n\n你没有走向任何人，只是站在原地，看两条路在月光里分开。\n\n后来你听说，那晚之后镇上多了一个传说：有个女孩在满月时走进森林，回来时口袋里多了一样东西。\n\n你从不解释那样东西是什么。因为那正是你唯一不想和任何人分享的部分。\n\n〔尾〕你成了镇上那个传说里的女孩，人们用猜测填补你留下的空白。你从不解释，因为你知道，有些经历一旦被别人讲述，就不再属于你自己。你珍藏着口袋里那样东西，也珍藏着那个满月的秘密——它是你唯一不愿与世界分享的财富。\n\n〔尾二〕镇上的人至今仍在传说那个满月的夜晚，说法越来越多，越来越离奇。你听着这些传说，从不否认也不承认。你知道，真相只属于那个走进森林又走出来的女孩，而她，早已把那枚东西藏到了连时间都找不到的地方。\n\n〔尾三〕秘密让你完整，也让你与整个世界保持了一段温柔而固执的距离。\n\n〔尾四〕你把那晚的月光折好，收进记忆最深的抽屉，从不轻易打开。\n\n〔尾五〕你成了自己的谜，也成了自己唯一的答案，这让你感到一种完整的孤独。\n\n〔尾六〕你守着那个秘密，就像守着一盏只为自己点亮的灯，在每一个满月的夜里，安静地亮着，直到永远。\n\n〔尾七〕你把那个秘密带进了往后的岁月，像带着一颗只有自己能听见的、跳动的心。"},
+self_rift:{"title":"两边都失去",
+ "tag":"阵营 独立 · 基调 裂隙",
+ "text":"你说了太多谎，也藏了太多真话。\n\nStefan 不再问你第二遍。Damon 也不再出现在你面前。\n\n雨停的时候，篝火已经熄灭，只剩你一个人——和一个你再也无法确认的答案。\n\n你终于明白，独立不等于不孤单。你把所有人都推开之后，才发现自己站在了一片谁也到不了的地方。\n\n〔尾〕你最终学会了与孤独相处，却始终没能学会与它和解。你把所有人推开的那天，以为自己赢得了自由；后来才知道，完全的自由和完全的孤单，原来是同一种滋味。你在雨停后的空地上站了很久，像一个终于到达终点、却忘了为何出发的人。\n\n〔尾二〕你在无数个清晨醒来，告诉自己要重新开始，却在夜里又回到原点。孤独像一件穿久了的外衣，贴合得几乎忘了它的存在。可你始终没有摘下它——因为你不确定，脱下它之后，自己还剩下什么。\n\n〔尾三〕你在拥有的孤独里，慢慢学会了如何做自己唯一的依靠。\n\n〔尾四〕你在孤独中站了很久，直到学会与自己握手言和。\n\n〔尾五〕你终于与自己言和，哪怕代价是，从此只剩自己陪着自己走完剩下的路。\n\n〔尾六〕你把孤独走成了一条路，路的尽头，是你终于学会拥抱的自己。从此你不再害怕独处，因为你终于成为了自己最可靠的同伴，最坚定的守护者。\n\n〔尾七〕你在孤独里站成了一棵树， 根扎得很深，虽然寂寞，却再也不会倒下。"}
+};
+function judge(){
+ let align;
+ if(S.damon>=S.stefan+2&&S.damon>=4)align='damon';
+ else if(S.stefan>=S.damon+2&&S.stefan>=4)align='stefan';
+ else align='self';
+ let tone;
+ if(S.self>=5)tone='clear';
+ else if(S.self<=2)tone='rift';
+ else tone=S.moon===2?'dark':'clear';
+ return align+'_'+tone;
+}
+function cleanMarks(s){return String(s==null?'':s).replace(/〔(?:扩|深|终|尾|尾[二三四五六七八九十]+)〕/g,'');}
+function getBody(n){return cleanMarks(typeof n.text==='function'?n.text(S):n.text);}
+
+/* ==================== 引擎 ==================== */
+let typing=null,fullText='',typed=0,isTyping=false,pendingNode=null,currentKey='c1_0',typingDone=null,autoTimer=null;
+const elText=document.getElementById('text'),elNext=document.getElementById('next');
+const SPEEDS=[45,25,12],SPEED_NAMES=['慢速','标准','快速'];
+let speedIdx=1,autoPlay=false;
+try{const p=JSON.parse(localStorage.getItem('tvd_prefs')||'{}');if(typeof p.speed==='number')speedIdx=p.speed;autoPlay=!!p.auto;}catch(e){}
+function savePrefs(){localStorage.setItem('tvd_prefs',JSON.stringify({speed:speedIdx,auto:autoPlay,bar:document.getElementById('app').classList.contains('letterbox'),atmos:document.getElementById('atmos').dataset.on!=='0'}));}
+function clearType(){if(typing){clearInterval(typing);typing=null;}isTyping=false;elText.innerHTML=fullText;}
+function finishTyping(){
+ clearType();const cb=typingDone;typingDone=null;
+ if(cb)cb();else{elNext.classList.add('show');if(autoPlay)autoTimer=setTimeout(advance,1800);}
+}
+function typeText(str,done){
+ if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+ typingDone=null;clearType();fullText=str;typed=0;isTyping=true;typingDone=done||null;
+ elText.innerHTML='<span class="caret"></span>';elNext.classList.remove('show');
+ typing=setInterval(()=>{typed++;elText.innerHTML=str.slice(0,typed).replace(/</g,'&lt;')+'<span class="caret"></span>';if(typed>=str.length)finishTyping();},SPEEDS[speedIdx]);
+}
+function setAtmos(scene){
+ const box=document.getElementById('atmos');if(box.dataset.on==='0'){box.innerHTML='';return;}
+ let n=0,color='#fff',dur='9s';
+ if(scene==='grave'){n=34;dur='7s';}
+ else if(scene==='bonfire'){n=22;color='#f0b45a';dur='6s';}
+ else if(scene==='woods'){n=16;color='#cfe0d2';dur='12s';}
+ else if(scene==='ritual'){n=20;color='#e0c675';dur='8s';}
+ else n=10;
+ let html='';for(let i=0;i<n;i++){html+=`<i style="left:${Math.random()*100}%;width:${Math.random()*2+1}px;height:${Math.random()*2+1}px;background:${color};animation-duration:${(parseFloat(dur)*(0.6+Math.random()*0.9)).toFixed(1)}s;animation-delay:${(-Math.random()*12).toFixed(1)}s;opacity:${0.15+Math.random()*0.3}"></i>`;}
+ box.innerHTML=html;
+}
+function setScene(key){
+ const i=sceneIndex[key];if(i===undefined)return;
+ document.querySelectorAll('.scene').forEach((el,n)=>el.classList.toggle('active',n===i));
+ setAtmos(key);
+}
+function showNode(key){
+ const n=nodes[key];if(!n){console.error('missing node',key);return;}
+ currentKey=key;S.node=key;S.step++;
+ if(n.enter)apply(n.enter);
+ if(n.scene!==undefined)setScene(n.scene);
+ setPortrait(n.portrait||null,n.expr?getExpr(n.expr):null);
+ const sp=document.getElementById('speaker');
+ sp.textContent=n.who||'';sp.className='speaker '+(n.portrait||'');
+ pendingNode=n;const body=getBody(n);
+ document.getElementById('choices').classList.remove('show');
+ typeText(body,n.choices?()=>showChoices(n):null);
+ if(n.who)S.log.push({who:n.who,text:body.replace(/\n/g,' ')});
+}
+function getExpr(e){return typeof e==='function'?e(S):e;}
+function showChoices(n){
+ const box=document.getElementById('choices');document.getElementById('choiceList').innerHTML='';
+ document.getElementById('choicesTitle').textContent=n.choicesTitle||'你要怎么做？';
+ n.choices.forEach((c,i)=>{
+  const ok=!c.req||c.req();const b=document.createElement('button');
+  b.className='choice'+(ok?'':' locked');b.disabled=!ok;
+  const label=typeof c.label==='function'?c.label(S):c.label;
+  const fx=fxLabel(c.fx);
+  b.innerHTML=label+'<span class="key">'+(ok?(i+1):'—')+'</span>'+(fx?'<span class="fx">'+fx+'</span>':'')+(ok?'':'<span class="lock">🔒 '+c.reqLabel+'</span>');
+  b.onclick=()=>choose(c);document.getElementById('choiceList').appendChild(b);
+ });
+ box.classList.add('show');elNext.classList.remove('show');
+}
+function choose(c){
+ document.getElementById('choices').classList.remove('show');
+ apply(c.fx);S.log.push({who:'你的选择',text:typeof c.label==='function'?c.label(S):c.label,type:'choice'});
+ const fl=document.getElementById('flash');fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),60);
+ showNode(c.next);
+}
+function advance(){
+ if(document.getElementById('titleScreen').classList.contains('show'))return;
+ if(pendingNode&&pendingNode.choices&&document.getElementById('choices').classList.contains('show'))return;
+ if(isTyping){finishTyping();return;}
+ if(!pendingNode)return;
+ if(pendingNode.ending){finish();return;}
+ if(pendingNode.next)showNode(pendingNode.next);
+}
+function finish(){
+ const key=judge(),e=endings[key];
+ document.getElementById('endStamp').textContent=seenEndings().length+' / '+Object.keys(endings).length+' 已解锁';
+ document.getElementById('endTitle').textContent=e.title;
+ document.getElementById('endTag').textContent=e.tag;
+ document.getElementById('endText').textContent=cleanMarks(e.text);
+ document.getElementById('endStats').textContent=`Stefan ${S.stefan} · Damon ${S.damon} · 自我边界 ${S.self} · 月相 ${MOONS[S.moon]} · 线索 ${Object.keys(S.flags).length}`;
+ let seen=seenEndings();if(seen.indexOf(key)<0)seen.push(key);
+ localStorage.setItem('tvd_full_endings',JSON.stringify(seen));
+ renderGallery();setPortrait(null);document.getElementById('endScreen').classList.add('show');
+}
+function seenEndings(){try{return JSON.parse(localStorage.getItem('tvd_full_endings')||'[]')}catch(e){return[]}}
+function renderGallery(){
+ const seen=seenEndings();
+ document.getElementById('gallery').innerHTML=Object.keys(endings).map(k=>
+  '<div class="gitem '+(seen.includes(k)?'on':'')+'">'+(seen.includes(k)?endings[k].title:'？？？')+'<small>'+(seen.includes(k)?'已解锁':'未解锁')+'</small></div>').join('');
+}
+function newGame(){
+ S.stefan=2;S.damon=1;S.self=3;S.moon=1;S.night=true;S.chapter=1;S.flags={};S.node='c1_0';S.log=[];S.step=0;
+ updateHUD();document.getElementById('titleScreen').classList.remove('show');document.getElementById('endScreen').classList.remove('show');showNode('c1_0');
+}
+function save(){localStorage.setItem('tvd_full_save',JSON.stringify({node:currentKey,stefan:S.stefan,damon:S.damon,self:S.self,moon:S.moon,night:S.night,chapter:S.chapter,flags:S.flags,log:S.log,step:S.step,time:Date.now()}));flash('已存档');}
+function load(){
+ const raw=localStorage.getItem('tvd_full_save');if(!raw){flash('还没有存档');return;}
+ try{const d=JSON.parse(raw);Object.assign(S,{stefan:d.stefan,damon:d.damon,self:d.self,moon:d.moon,night:d.night,chapter:d.chapter,flags:d.flags||{},log:d.log||[],step:d.step||0});
+  updateHUD();document.getElementById('titleScreen').classList.remove('show');document.getElementById('endScreen').classList.remove('show');showNode(d.node);flash('已读档');
+ }catch(e){flash('存档损坏');}
+}
+function flash(msg){
+ const el=document.createElement('div');el.textContent=msg;
+ el.style.cssText='position:absolute;top:70px;right:22px;z-index:30;background:#17121d;border:1px solid #c9a227;color:#e0c675;font-size:12px;padding:9px 16px;letter-spacing:.1em;box-shadow:0 8px 24px rgba(0,0,0,.6)';
+ document.getElementById('app').appendChild(el);setTimeout(()=>el.remove(),1400);
+}
+/* ---------- 事件绑定 ---------- */
+document.getElementById('dialogue').onclick=advance;
+document.addEventListener('keydown',e=>{
+ if(document.getElementById('setScreen').classList.contains('show')){if(e.key==='Escape')document.getElementById('setScreen').classList.remove('show');return;}
+ if(e.key===' '||e.key==='Enter'){e.preventDefault();advance();}
+ const box=document.getElementById('choices');
+ if(box.classList.contains('show')&&['1','2','3','4'].includes(e.key)){
+  const b=document.querySelectorAll('.choice')[Number(e.key)-1];if(b&&!b.disabled)b.click();
+ }
+});
+document.getElementById('btnStart').onclick=newGame;
+document.getElementById('btnContinue').onclick=load;
+document.getElementById('btnRestart').onclick=newGame;
+document.getElementById('btnBackTitle').onclick=()=>{document.getElementById('endScreen').classList.remove('show');document.getElementById('titleScreen').classList.add('show');renderGallery();};
+document.getElementById('btnSave').onclick=save;
+document.getElementById('btnLoad').onclick=load;
+document.getElementById('btnHome').onclick=()=>{document.getElementById('titleScreen').classList.add('show');document.getElementById('endScreen').classList.remove('show');renderGallery();};
+document.getElementById('btnLog').onclick=()=>{
+ document.getElementById('logContent').innerHTML=S.log.map(l=>'<div class="logline '+(l.type==='choice'?'choice-log':l.type==='chapter'?'chapter-log':'')+'"><b>'+l.who+'</b>'+l.text+'</div>').join('');
+ document.getElementById('logPanel').classList.add('show');
+};
+document.getElementById('logPanel').onclick=()=>document.getElementById('logPanel').classList.remove('show');
+document.getElementById('btnSet').onclick=()=>{document.getElementById('setScreen').classList.add('show');syncSetUI();};
+document.getElementById('setClose').onclick=()=>{document.getElementById('setScreen').classList.remove('show');savePrefs();};
+document.getElementById('setSpeed').onclick=()=>{speedIdx=(speedIdx+1)%SPEEDS.length;document.getElementById('setSpeed').textContent=SPEED_NAMES[speedIdx];savePrefs();};
+document.getElementById('setAuto').onclick=()=>{autoPlay=!autoPlay;document.getElementById('setAuto').textContent=autoPlay?'开启':'关闭';savePrefs();};
+document.getElementById('setBar').onclick=()=>{const a=document.getElementById('app');a.classList.toggle('letterbox');document.getElementById('setBar').textContent=a.classList.contains('letterbox')?'开启':'关闭';savePrefs();};
+document.getElementById('setAtmos').onclick=()=>{const b=document.getElementById('atmos');b.dataset.on=b.dataset.on==='0'?'1':'0';document.getElementById('setAtmos').textContent=b.dataset.on==='0'?'关闭':'开启';setAtmos(S.scene||'grave');savePrefs();};
+function syncSetUI(){
+ document.getElementById('setSpeed').textContent=SPEED_NAMES[speedIdx];
+ document.getElementById('setAuto').textContent=autoPlay?'开启':'关闭';
+ document.getElementById('setBar').textContent=document.getElementById('app').classList.contains('letterbox')?'开启':'关闭';
+ document.getElementById('setAtmos').textContent=document.getElementById('atmos').dataset.on==='0'?'关闭':'开启';
+}
+document.getElementById('atmos').dataset.on='1';
+document.getElementById('setSpeed').textContent=SPEED_NAMES[speedIdx];
+updateHUD();renderGallery();
+</script>
+</body>
+</html>
